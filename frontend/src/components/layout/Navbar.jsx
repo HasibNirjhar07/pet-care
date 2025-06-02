@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import { 
   Heart, 
@@ -25,7 +26,6 @@ const Navbar = ({
   userAvatar = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face',
   cartCount = 3,
   notificationCount = 5,
-  onLogin,
   onLogout,
   onSearch,
   currentPage = 'home' // for active state
@@ -301,18 +301,18 @@ const Navbar = ({
               </>
             ) : (
               <div className="flex items-center space-x-3">
-                <button 
-                  onClick={onLogin}
+                <Link
+                  to="/signin"
                   className="text-gray-700 hover:text-purple-600 font-medium transition-colors"
                 >
                   Sign In
-                </button>
-                <button 
-                  onClick={onLogin}
+                </Link>
+                <Link 
+                  to="/signup"
                   className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-full font-medium hover:scale-105 transform transition-all shadow-lg"
                 >
                   Get Started
-                </button>
+                </Link>
               </div>
             )}
 

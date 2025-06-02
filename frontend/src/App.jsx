@@ -1,11 +1,54 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import LandingPage from './pages/LandingPage/LandingPage'
+import SignInPage from "./pages/SignInPage";
+import SignUpPage from "./pages/SignUpPage";
+import Navbar from "./components/layout/Navbar";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { signOut, onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebase";
+
+const AppContent = ({ user, setUser, handleLogout }) => {
+  const location = useLocation();
+
+  return (
+    <>
+      <Navbar
+        isAuthenticated={!!user}
+        userName={user?.displayName || user?.email || "User"}
+        userAvatar={user?.photoURL}
+        onLogout={handleLogout}
+        currentPage={location.pathname}
+      />
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/signin" element={<SignInPage onSignIn={setUser} />} />
+        <Route path="/signup" element={<SignUpPage onSignUp={setUser} />} />
+      </Routes>
+    </>
+  );
+};
 
 const App = () => {
+  const [user, setUser] = useState(null);
+
+  // Persist user session
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Logout handler
+  const handleLogout = async () => {
+    await signOut(auth);
+    setUser(null);
+  };
+
   return (
-    <div>
-      <LandingPage />
-    </div>
+    <Router>
+      <AppContent user={user} setUser={setUser} handleLogout={handleLogout} />
+    </Router>
   )
 }
 

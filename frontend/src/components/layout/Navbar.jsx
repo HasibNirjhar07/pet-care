@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link , useNavigate} from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import { 
   Heart, 
@@ -35,6 +35,16 @@ const Navbar = ({
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeDropdown, setActiveDropdown] = useState(null);
+
+   const navigate = useNavigate();
+
+  const handleLogout = (e) => {
+    e.preventDefault();
+    if (onLogout) {
+      onLogout();
+    }
+    navigate('/'); // Redirect to landing page
+  };
 
   // Handle scroll effect
   useEffect(() => {
@@ -125,6 +135,9 @@ const Navbar = ({
     return baseItems;
   };
 
+
+
+
   const navigationItems = getNavigationItems();
 
   const DropdownMenu = ({ items, isOpen }) => (
@@ -172,7 +185,9 @@ const Navbar = ({
         </a>
         <div className="border-t border-gray-100 mt-2 pt-2">
           <button 
-            onClick={onLogout}
+            onClick={handleLogout}
+
+            
             className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
           >
             <LogOut className="h-4 w-4 mr-3" />
@@ -398,7 +413,7 @@ const Navbar = ({
                   Settings
                 </a>
                 <button 
-                  onClick={onLogout}
+                  onClick={handleLogout}
                   className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg"
                 >
                   <LogOut className="h-4 w-4 mr-3" />

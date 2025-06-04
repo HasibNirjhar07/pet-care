@@ -1,13 +1,7 @@
 import React from 'react';
 import { Calendar, MapPin, Heart, Users } from 'lucide-react';
-import {
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  Box,
-  Divider,
-} from '@mui/material';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 const QuickActions = () => {
   const nearbyHomes = [
@@ -23,107 +17,91 @@ const QuickActions = () => {
   ];
 
   return (
-    <Box display="flex" flexDirection="column" gap={4}>
+    <div className="flex flex-col gap-6">
       {/* Nearby Adoption Homes */}
-      <Card sx={{ boxShadow: 3, bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(6px)' }}>
-        <Box px={2} py={1} display="flex" alignItems="center" borderBottom="1px solid #eee">
-          <MapPin size={20} color="#9333ea" style={{ marginRight: 8 }} />
-          <Typography variant="h6" fontSize={16}>
-            Nearby Adoption Homes
-          </Typography>
-        </Box>
-        <CardContent>
+      <Card className="shadow-md bg-white/80 backdrop-blur-sm">
+        <div className="flex items-center border-b border-gray-200 px-4 py-2">
+          <MapPin size={20} className="text-purple-600 mr-2" />
+          <h2 className="text-base font-semibold">Nearby Adoption Homes</h2>
+        </div>
+        <CardContent className="space-y-3">
           {nearbyHomes.map((home, index) => (
-            <Box
+            <div
               key={index}
-              bgcolor="linear-gradient(to right, #f5f3ff, #ffe4e6)"
-              borderRadius={2}
-              p={2}
-              mb={2}
-              sx={{ background: 'linear-gradient(to right, #f5f3ff, #ffe4e6)' }}
+              className="rounded-lg p-3 space-y-2"
+              style={{
+                background: 'linear-gradient(to right, #f5f3ff, #ffe4e6)',
+              }}
             >
-              <Box display="flex" justifyContent="space-between" alignItems="start" mb={1}>
-                <Typography variant="subtitle2">{home.name}</Typography>
-                <Typography fontSize={12} px={1} py={0.5} bgcolor="#d1fae5" color="#065f46" borderRadius={1}>
+              <div className="flex justify-between items-start">
+                <span className="font-medium text-sm">{home.name}</span>
+                <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">
                   ⭐ {home.rating}
-                </Typography>
-              </Box>
-              <Typography fontSize={12} color="text.secondary" mb={1}>
-                {home.distance} away
-              </Typography>
-              <Box display="flex" justifyContent="space-between" alignItems="center">
-                <Typography fontSize={12} color="text.secondary">
+                </span>
+              </div>
+              <p className="text-xs text-gray-600">{home.distance} away</p>
+              <div className="flex justify-between items-center">
+                <p className="text-xs text-gray-600">
                   {home.slots} slots available
-                </Typography>
-                <Button size="small" variant="outlined">
+                </p>
+                <Button variant="outline" className="h-7 px-3 text-xs">
                   Book
                 </Button>
-              </Box>
-            </Box>
+              </div>
+            </div>
           ))}
         </CardContent>
       </Card>
 
       {/* Upcoming Events */}
-      <Card sx={{ boxShadow: 3, bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(6px)' }}>
-        <Box px={2} py={1} display="flex" alignItems="center" borderBottom="1px solid #eee">
-          <Calendar size={20} color="#9333ea" style={{ marginRight: 8 }} />
-          <Typography variant="h6" fontSize={16}>
-            Upcoming Events
-          </Typography>
-        </Box>
-        <CardContent>
+      <Card className="shadow-md bg-white/80 backdrop-blur-sm">
+        <div className="flex items-center border-b border-gray-200 px-4 py-2">
+          <Calendar size={20} className="text-purple-600 mr-2" />
+          <h2 className="text-base font-semibold">Upcoming Events</h2>
+        </div>
+        <CardContent className="space-y-3">
           {upcomingEvents.map((event, index) => (
-            <Box
+            <div
               key={index}
-              bgcolor="linear-gradient(to right, #eff6ff, #f3e8ff)"
-              borderRadius={2}
-              p={2}
-              mb={2}
-              sx={{ background: 'linear-gradient(to right, #eff6ff, #f3e8ff)' }}
+              className="rounded-lg p-3"
+              style={{
+                background: 'linear-gradient(to right, #eff6ff, #f3e8ff)',
+              }}
             >
-              <Typography variant="subtitle2" mb={0.5}>
-                {event.title}
-              </Typography>
-              <Typography fontSize={12} color="text.secondary">
+              <p className="font-medium text-sm mb-0.5">{event.title}</p>
+              <p className="text-xs text-gray-600">
                 {event.date} • {event.location}
-              </Typography>
-            </Box>
+              </p>
+            </div>
           ))}
         </CardContent>
       </Card>
 
       {/* Quick Stats */}
-      <Card sx={{ boxShadow: 3, background: 'linear-gradient(to bottom right, #ede9fe, #fce7f3)' }}>
-        <CardContent>
-          <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
-            <Heart size={32} color="#9333ea" />
-            <Box textAlign="center">
-              <Typography variant="h4" fontWeight="bold" color="text.primary">
-                2,847
-              </Typography>
-              <Typography fontSize={14} color="text.secondary">
-                Pets Found Homes
-              </Typography>
-            </Box>
-            <Button
-              variant="contained"
-              fullWidth
-              startIcon={<Users size={16} />}
-              sx={{
-                background: 'linear-gradient(to right, #9333ea, #ec4899)',
-                '&:hover': {
-                  background: 'linear-gradient(to right, #7e22ce, #db2777)',
-                },
-                color: 'white',
-              }}
-            >
-              Join Community
-            </Button>
-          </Box>
+      <Card
+        className="shadow-md"
+        style={{
+          background: 'linear-gradient(to bottom right, #ede9fe, #fce7f3)',
+        }}
+      >
+        <CardContent className="flex flex-col items-center gap-3 text-center">
+          <Heart size={32} className="text-purple-600" />
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900">2,847</h3>
+            <p className="text-sm text-gray-600">Pets Found Homes</p>
+          </div>
+          <Button
+            className="w-full text-white"
+            style={{
+              background: 'linear-gradient(to right, #9333ea, #ec4899)',
+            }}
+          >
+            <Users size={16} className="mr-2" />
+            Join Community
+          </Button>
         </CardContent>
       </Card>
-    </Box>
+    </div>
   );
 };
 

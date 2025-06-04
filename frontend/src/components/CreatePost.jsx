@@ -1,19 +1,12 @@
 import { useState } from "react";
 import { Camera, Image, User } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  Button,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Box,
-  Typography,
-  Avatar,
-  Grid
-} from "@mui/material";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Avatar } from "@/components/ui/avatar";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 const CreatePost = () => {
   const [postText, setPostText] = useState("");
@@ -22,169 +15,106 @@ const CreatePost = () => {
   const [adoptionType, setAdoptionType] = useState("");
 
   return (
-    <Card 
-      sx={{ 
-        boxShadow: 3, 
-        border: 'none', 
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        backdropFilter: 'blur(8px)'
-      }}
-    >
-      <CardContent sx={{ p: 3 }}>
+    <Card className="bg-white/90 backdrop-blur-md shadow-md border-none">
+      <CardContent className="p-4">
         {!showForm ? (
-          <Box display="flex" alignItems="center" gap={2}>
-            <Avatar
-              sx={{
-                width: 40,
-                height: 40,
-                background: 'linear-gradient(45deg, #9c27b0, #e91e63)'
-              }}
-            >
+          <div className="flex items-center gap-3">
+            <Avatar className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-500 text-white">
               <User size={20} />
             </Avatar>
             <Button
               onClick={() => setShowForm(true)}
-              variant="outlined"
-              fullWidth
-              sx={{
-                justifyContent: 'flex-start',
-                textAlign: 'left',
-                py: 1.5,
-                px: 3,
-                borderRadius: '50px',
-                backgroundColor: '#f5f5f5',
-                border: 'none',
-                color: '#666',
-                textTransform: 'none',
-                '&:hover': {
-                  backgroundColor: '#e0e0e0',
-                  border: 'none'
-                }
-              }}
+              variant="outline"
+              className="w-full justify-start text-muted-foreground rounded-full bg-gray-100 hover:bg-gray-200"
             >
               Share a pet for adoption...
             </Button>
-          </Box>
+          </div>
         ) : (
-          <Box sx={{ space: 2 }}>
-            <Box display="flex" alignItems="center" gap={2} mb={3}>
-              <Avatar
-                sx={{
-                  width: 40,
-                  height: 40,
-                  background: 'linear-gradient(45deg, #9c27b0, #e91e63)'
-                }}
-              >
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Avatar className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-500 text-white">
                 <User size={20} />
               </Avatar>
-              <Box>
-                <Typography variant="h6" fontWeight="600">
-                  Create Adoption Post
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
+              <div>
+                <p className="text-sm font-semibold">Create Adoption Post</p>
+                <p className="text-xs text-muted-foreground">
                   Help a pet find their forever home
-                </Typography>
-              </Box>
-            </Box>
+                </p>
+              </div>
+            </div>
 
-            <TextField
-              fullWidth
-              multiline
-              rows={4}
-              placeholder="Tell us about your pet's story, personality, and what kind of home you're looking for..."
+            <Textarea
               value={postText}
               onChange={(e) => setPostText(e.target.value)}
-              variant="outlined"
-              sx={{ mb: 3 }}
+              placeholder="Tell us about your pet's story, personality, and what kind of home you're looking for..."
+              rows={4}
             />
 
-            <Grid container spacing={2} sx={{ mb: 3 }}>
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Pet Type</InputLabel>
-                  <Select
-                    value={petType}
-                    onChange={(e) => setPetType(e.target.value)}
-                    label="Pet Type"
-                  >
-                    <MenuItem value="dog">Dog</MenuItem>
-                    <MenuItem value="cat">Cat</MenuItem>
-                    <MenuItem value="bird">Bird</MenuItem>
-                    <MenuItem value="rabbit">Rabbit</MenuItem>
-                    <MenuItem value="other">Other</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label>Pet Type</Label>
+                <Select onValueChange={setPetType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Pet Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="dog">Dog</SelectItem>
+                    <SelectItem value="cat">Cat</SelectItem>
+                    <SelectItem value="bird">Bird</SelectItem>
+                    <SelectItem value="rabbit">Rabbit</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Adoption Type</Label>
+                <Select onValueChange={setAdoptionType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Adoption Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="permanent">Permanent</SelectItem>
+                    <SelectItem value="temporary">Temporary</SelectItem>
+                    <SelectItem value="foster">Foster Care</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Adoption Type</InputLabel>
-                  <Select
-                    value={adoptionType}
-                    onChange={(e) => setAdoptionType(e.target.value)}
-                    label="Adoption Type"
-                  >
-                    <MenuItem value="permanent">Permanent</MenuItem>
-                    <MenuItem value="temporary">Temporary</MenuItem>
-                    <MenuItem value="foster">Foster Care</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-            </Grid>
-
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Box display="flex" gap={1}>
+            <div className="flex justify-between items-center">
+              <div className="flex gap-2">
                 <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<Image size={16} />}
-                  sx={{
-                    textTransform: 'none',
-                    '&:hover': {
-                      backgroundColor: '#f3e5f5'
-                    }
-                  }}
+                  variant="outline"
+                  size="sm"
+                  className="text-sm text-muted-foreground hover:bg-purple-100"
                 >
-                  Photo
+                  <Image size={16} className="mr-1" /> Photo
                 </Button>
                 <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<Camera size={16} />}
-                  sx={{
-                    textTransform: 'none',
-                    '&:hover': {
-                      backgroundColor: '#f3e5f5'
-                    }
-                  }}
+                  variant="outline"
+                  size="sm"
+                  className="text-sm text-muted-foreground hover:bg-purple-100"
                 >
-                  Video
+                  <Camera size={16} className="mr-1" /> Video
                 </Button>
-              </Box>
-
-              <Box display="flex" gap={1}>
+              </div>
+              <div className="flex gap-2">
                 <Button
-                  variant="outlined"
+                  variant="outline"
                   onClick={() => setShowForm(false)}
-                  sx={{ textTransform: 'none' }}
+                  className="text-sm"
                 >
                   Cancel
                 </Button>
                 <Button
-                  variant="contained"
-                  sx={{
-                    background: 'linear-gradient(45deg, #9c27b0, #e91e63)',
-                    textTransform: 'none',
-                    '&:hover': {
-                      background: 'linear-gradient(45deg, #7b1fa2, #c2185b)'
-                    }
-                  }}
+                  className="bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:from-purple-700 hover:to-pink-600 text-sm"
                 >
                   Post
                 </Button>
-              </Box>
-            </Box>
-          </Box>
+              </div>
+            </div>
+          </div>
         )}
       </CardContent>
     </Card>

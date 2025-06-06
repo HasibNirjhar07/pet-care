@@ -11,7 +11,6 @@ import CtaSection from "../../components/landing/CTASection";
 const LandingPage = () => {
   return (
     <div>
-      
       <HeroSection />
       <FeaturesSection />
       <HowItWorksSection />
@@ -19,7 +18,6 @@ const LandingPage = () => {
       <StatsSection />
       <CtaSection />
       <Footer />
-
     </div>
   );
 };

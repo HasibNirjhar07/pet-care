@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+const cors = require('cors');
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 require("dotenv").config();
@@ -19,7 +20,15 @@ mongoose.connect(mongoURL)
     console.log("Database connection failed:", error)
 );
 
+// Frontend CORS configuration
+app.use(cors({
+  origin: 'http://localhost:5173', // Vite's default dev server
+  credentials: true, // if you're using cookies or auth headers
+}));
+
 // Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use("/api/auth", authRoutes);
 app.use("/profile", profileRoutes);

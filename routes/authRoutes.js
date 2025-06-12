@@ -6,8 +6,8 @@ router.post('/signup', createNewUser);
 
 router.post('/login', loginUser);
 
-router.post('/otp/send', sendOtp);
+// router.post('/otp/send', sendOtp);
 
-router.post('/otp/verify', verifyOtp);
+// router.post('/otp/verify', verifyOtp);
 
 module.exports = router;

@@ -17,18 +17,21 @@ import {
   PlusCircle,
   ChevronDown,
   Shield,
+
 } from "lucide-react";
+
+
 
 const Navbar = ({
   isAuthenticated = false,
-  userRole = "user", // 'user', 'vet', 'admin'
+  userRole = "user",
   userName = "John Doe",
   userAvatar = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
   cartCount = 3,
   notificationCount = 5,
   onLogout,
   onSearch,
-  currentPage = "home", // for active state
+  currentPage = "home",
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -43,10 +46,9 @@ const Navbar = ({
     if (onLogout) {
       onLogout();
     }
-    navigate("/"); // Redirect to landing page
+    navigate("/");
   };
 
-  // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -55,7 +57,6 @@ const Navbar = ({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = () => {
       setIsUserMenuOpen(false);
@@ -72,87 +73,95 @@ const Navbar = ({
     }
   };
 
-  // Navigation items based on user role
-  const getNavigationItems = () => {
-    const baseItems = [
-      { name: "Home", href: "/", icon: Home, key: "home" },
-      {
-        name: "Adopt",
-        href: "/adopt",
-        icon: Heart,
-        key: "adopt",
-        dropdown: [
-          { name: "Browse Pets", href: "/adopt/browse" },
-          { name: "Post Pet", href: "/adopt/post" },
-          { name: "My Listings", href: "/adopt/my-listings" },
-          { name: "Adoption Requests", href: "/adopt/requests" },
-        ],
-      },
-      {
-        name: "Care Services",
-        href: "/care",
-        icon: Users,
-        key: "care",
-        dropdown: [
-          { name: "Find Care", href: "/care/browse" },
-          { name: "Become Provider", href: "/care/register" },
-          { name: "My Bookings", href: "/care/bookings" },
-        ],
-      },
-      { name: "Shop", href: "/shop", icon: ShoppingCart, key: "shop" },
-    ];
-
-    if (userRole === "vet") {
-      baseItems.splice(2, 0, {
-        name: "Vet Portal",
-        href: "/vet",
-        icon: Stethoscope,
-        key: "vet",
-        dropdown: [
-          { name: "My Patients", href: "/vet/patients" },
-          { name: "Appointments", href: "/vet/appointments" },
-          { name: "Medical Records", href: "/vet/records" },
-          { name: "Reminders", href: "/vet/reminders" },
-        ],
-      });
-    }
-
-    if (userRole === "admin") {
-      baseItems.push({
-        name: "Admin",
-        href: "/admin",
-        icon: Shield,
-        key: "admin",
-        dropdown: [
-          { name: "Dashboard", href: "/admin/dashboard" },
-          { name: "Users", href: "/admin/users" },
-          { name: "Reports", href: "/admin/reports" },
-          { name: "Settings", href: "/admin/settings" },
-        ],
-      });
-    }
-
-    return baseItems;
+  const getHomePath = () => {
+    return isAuthenticated ? "/dashboard" : "/";
   };
+
+const getNavigationItems = () => {
+  const baseItems = [];
+
+  if (isAuthenticated) {
+    baseItems.push({ name: "Home", to: "/dashboard", icon: Home, key: "home" });
+    baseItems.push({
+      name: "Care & Services",
+      to: "/care",
+      icon: Users, // Added icon
+      key: "care", // Added key
+   
+    });
+    baseItems.push({
+      name: "Shop",
+      to: "/shop",
+      icon: ShoppingCart,
+      key: "shop",
+   
+    });
+  }
+
+  baseItems.push({
+    name: "Adopt",
+    to: "/adopt",
+    icon: Heart,
+    key: "adopt",
+    dropdown: [
+      { name: "Browse Pets", to: "/adopt/browse" },
+      { name: "Adoption Homes", to: "/adopt/homes" },
+      { name: "Post Adoption", to: "/adopt/post" },
+      { name: "Adoption Requests", to: "/adopt/requests" },
+    ],
+  });
+
+  if (userRole === "vet") {
+    // Insert "Vet Portal" after "Home" and "Care & Services" but before "Shop"
+    const insertIndex = isAuthenticated ? 2 : 0; // Adjust based on authentication
+    baseItems.splice(insertIndex, 0, {
+      name: "Vet Portal",
+      to: "/vet",
+      icon: Stethoscope,
+      key: "vet",
+      dropdown: [
+        { name: "My Patients", to: "/vet/patients" },
+        { name: "Appointments", to: "/vet/appointments" },
+        { name: "Medical Records", to: "/vet/records" },
+        { name: "Reminders", to: "/vet/reminders" },
+      ],
+    });
+  }
+
+  if (userRole === "admin") {
+    baseItems.push({
+      name: "Admin",
+      to: "/admin",
+      icon: Shield,
+      key: "admin",
+      dropdown: [
+        { name: "Dashboard", to: "/admin/dashboard" },
+        { name: "Users", to: "/admin/users" },
+        { name: "Reports", to: "/admin/reports" },
+        { name: "Settings", to: "/admin/settings" },
+      ],
+    });
+  }
+
+  return baseItems;
+};
 
   const navigationItems = getNavigationItems();
 
   const DropdownMenu = ({ items, isOpen }) => (
     <div
       className={`absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 transform transition-all duration-200 ${
-        isOpen
-          ? "opacity-100 scale-100"
-          : "opacity-0 scale-95 pointer-events-none"
+        isOpen ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
       }`}
     >
       {items.map((item, index) => (
-        <a
+        <Link
           key={index}
-          href={item.href}
+          to={item.to}
           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors"
         >
           {item.name}
-        </a>
+        </Link>
       ))}
     </div>
   );
@@ -160,49 +169,41 @@ const Navbar = ({
   const UserMenu = () => (
     <div
       className={`absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 transform transition-all duration-200 ${
-        isUserMenuOpen
-          ? "opacity-100 scale-100"
-          : "opacity-0 scale-95 pointer-events-none"
+        isUserMenuOpen ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
       }`}
     >
       <div className="px-4 py-3 border-b border-gray-100">
         <div className="flex items-center space-x-3">
-          <img
-            src={userAvatar}
-            alt={userName}
-            className="w-10 h-10 rounded-full"
-          />
+          <img src={userAvatar} alt={userName} className="w-10 h-10 rounded-full" />
           <div>
             <p className="font-semibold text-gray-800">{userName}</p>
-            <p className="text-sm text-gray-500 capitalize">
-              {userRole} Account
-            </p>
+            <p className="text-sm text-gray-500 capitalize">{userRole} Account</p>
           </div>
         </div>
       </div>
 
       <div className="py-2">
-        <a
-          href="/profile"
+        <Link
+          to="/profile"
           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors"
         >
           <User className="h-4 w-4 mr-3" />
           My Profile
-        </a>
-        <a
-          href="/settings"
+        </Link>
+        <Link
+          to="/settings"
           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors"
         >
           <Settings className="h-4 w-4 mr-3" />
           Settings
-        </a>
-        <a
-          href="/messages"
+        </Link>
+        <Link
+          to="/messages"
           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors"
         >
           <MessageCircle className="h-4 w-4 mr-3" />
           Messages
-        </a>
+        </Link>
         <div className="border-t border-gray-100 mt-2 pt-2">
           <button
             onClick={handleLogout}
@@ -224,11 +225,11 @@ const Navbar = ({
           : "bg-white/80 backdrop-blur-sm"
       }`}
     >
-      <div className="mr-2 px-4 ">
+      <div className="mr-2 px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex">
-            <Link to="/" className="flex items-center group">
+            <Link to={getHomePath()} className="flex items-center group">
               <Heart className="h-8 w-8 text-purple-600" />
               <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                 PetCare
@@ -244,9 +245,9 @@ const Navbar = ({
                   onClick={(e) => {
                     e.stopPropagation();
                     if (item.dropdown) {
-                      setActiveDropdown(
-                        activeDropdown === item.key ? null : item.key
-                      );
+                      setActiveDropdown(activeDropdown === item.key ? null : item.key);
+                    } else {
+                      navigate(item.to); // Navigate directly if no dropdown
                     }
                   }}
                   className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
@@ -261,10 +262,7 @@ const Navbar = ({
                 </button>
 
                 {item.dropdown && (
-                  <DropdownMenu
-                    items={item.dropdown}
-                    isOpen={activeDropdown === item.key}
-                  />
+                  <DropdownMenu items={item.dropdown} isOpen={activeDropdown === item.key} />
                 )}
               </div>
             ))}
@@ -273,7 +271,9 @@ const Navbar = ({
           {/* Search Bar */}
           <div className="hidden md:flex items-center max-w-md mx-4 flex-1">
             <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
+              />
               <input
                 type="text"
                 placeholder="Search pets, services..."
@@ -360,11 +360,7 @@ const Navbar = ({
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="lg:hidden p-2 text-gray-600 hover:text-purple-600 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              {isMobileMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
+              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
         </div>
@@ -378,7 +374,9 @@ const Navbar = ({
           {/* Mobile Search */}
           <div className="px-4 py-3 border-t border-gray-100">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
+              />
               <input
                 type="text"
                 placeholder="Search pets, services..."
@@ -394,8 +392,8 @@ const Navbar = ({
           <div className="px-4 py-2 space-y-1">
             {navigationItems.map((item) => (
               <div key={item.key}>
-                <a
-                  href={item.href}
+                <Link
+                  to={item.to}
                   className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     currentPage === item.key
                       ? "bg-purple-100 text-purple-700"
@@ -404,18 +402,18 @@ const Navbar = ({
                 >
                   <item.icon className="h-4 w-4 mr-3" />
                   {item.name}
-                </a>
+                </Link>
                 {/* Mobile Dropdown Items */}
                 {item.dropdown && (
                   <div className="ml-7 mt-1 space-y-1">
                     {item.dropdown.map((subItem, subIndex) => (
-                      <a
+                      <Link
                         key={subIndex}
-                        href={subItem.href}
+                        to={subItem.to}
                         className="block px-3 py-1 text-sm text-gray-600 hover:text-purple-600 hover:bg-gray-50 rounded"
                       >
                         {subItem.name}
-                      </a>
+                      </Link>
                     ))}
                   </div>
                 )}
@@ -427,33 +425,27 @@ const Navbar = ({
           {isAuthenticated && (
             <div className="px-4 py-3 border-t border-gray-100">
               <div className="flex items-center space-x-3 mb-3">
-                <img
-                  src={userAvatar}
-                  alt={userName}
-                  className="w-10 h-10 rounded-full"
-                />
+                <img src={userAvatar} alt={userName} className="w-10 h-10 rounded-full" />
                 <div>
                   <p className="font-semibold text-gray-800">{userName}</p>
-                  <p className="text-sm text-gray-500 capitalize">
-                    {userRole} Account
-                  </p>
+                  <p className="text-sm text-gray-500 capitalize">{userRole} Account</p>
                 </div>
               </div>
               <div className="space-y-1">
-                <a
-                  href="/profile"
+                <Link
+                  to="/profile"
                   className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg"
                 >
                   <User className="h-4 w-4 mr-3" />
                   My Profile
-                </a>
-                <a
-                  href="/settings"
+                </Link>
+                <Link
+                  to="/settings"
                   className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg"
                 >
                   <Settings className="h-4 w-4 mr-3" />
                   Settings
-                </a>
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg"

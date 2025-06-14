@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Eye, EyeOff, Lock, Mail, Heart } from "lucide-react"; // or wherever your icons are from
+import { Eye, EyeOff, Lock, Mail, Heart } from "lucide-react";
 
 const SignInPage = ({ onSignIn }) => {
   const navigate = useNavigate();
@@ -32,9 +32,26 @@ const SignInPage = ({ onSignIn }) => {
 
       // Save JWT token to localStorage
       localStorage.setItem("token", data.token);
+      
+      // Also save user data for persistence
+      localStorage.setItem("user", JSON.stringify(data.user));
 
-      // Notify parent component or context
-      onSignIn(data);
+      // Create user object compatible with your navbar
+      const userData = {
+        uid: data.user.id,
+        email: data.user.email,
+        displayName: data.user.displayName || data.user.name,
+        photoURL: data.user.photoURL,
+        username: data.user.username,
+        name: data.user.name,
+        phone: data.user.phone,
+        phoneVerified: data.user.phoneVerified,
+        role: data.user.role,
+        // Add any other fields your app needs
+      };
+
+      // Notify parent component
+      onSignIn(userData);
 
       navigate("/dashboard");
     } catch (err) {
@@ -157,7 +174,6 @@ const SignInPage = ({ onSignIn }) => {
             className="w-full flex justify-center items-center py-3 px-4 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] transition-all"
           >
             <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-              {/* Google icon paths */}
               <path
                 fill="#4285F4"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -181,7 +197,7 @@ const SignInPage = ({ onSignIn }) => {
 
         <div className="text-center">
           <p className="text-sm text-gray-600">
-            Don’t have an account?{" "}
+            Don't have an account?{" "}
             <Link
               to="/signup"
               className="font-semibold text-purple-600 hover:text-purple-500"

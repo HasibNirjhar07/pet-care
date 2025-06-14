@@ -88,7 +88,11 @@ const Dashboard = ({user , onLogout}) => {
 
           {/* Main Content - Newsfeed */}
           <div className="lg:col-span-2 space-y-6">
-            <CreatePost />
+            <CreatePost
+            
+            
+            
+            />
             
             <div className="space-y-6">
               {posts.map((post) => (

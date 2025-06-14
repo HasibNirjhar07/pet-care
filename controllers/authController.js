@@ -1,10 +1,7 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 
-
-
 // JWT Verification
-
 const jwt = require('jsonwebtoken');
 const { secret } = require("../config/jwtSecret");
 
@@ -26,7 +23,21 @@ const createNewUser = async (req, res) => {
         const user = new User({ username, name, email, password: hashedPassword, phone });
         await user.save();
 
-        res.status(201).json({ message: 'User created successfully', user: user });
+        // Return user data without password
+        const userData = {
+            id: user._id,
+            username: user.username,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            phoneVerified: user.phoneVerified,
+            role: user.role || 'user'
+        };
+
+        res.status(201).json({ 
+            message: 'User created successfully', 
+            user: userData 
+        });
     } catch (error) {
         console.error('Error inserting user:', error);
         return res.status(500).json({ error: 'Server error' });
@@ -88,10 +99,13 @@ const updateUserProfile = async (req, res) => {
         res.status(200).json({
             message: "Profile updated successfully",
             user: {
+                id: updatedUser._id,
                 username: updatedUser.username,
                 email: updatedUser.email,
                 phone: updatedUser.phone,
                 name: updatedUser.name,
+                phoneVerified: updatedUser.phoneVerified,
+                role: updatedUser.role || 'user'
             },
         });
     } catch (error) {
@@ -100,7 +114,7 @@ const updateUserProfile = async (req, res) => {
     }
 };
 
-
+// UPDATED LOGIN FUNCTION - Now includes user data
 const loginUser = async (req, res) => {
     const { username, password } = req.body;
 
@@ -118,13 +132,43 @@ const loginUser = async (req, res) => {
 
         // Compare passwords
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(401).send("Invalid credentials");
+        if (!isMatch) {
+            return res.status(401).json({ error: "Invalid credentials" });
+        }
 
-        const token = jwt.sign({ _id: user._id, username: user.username,  }, secret , {
-            expiresIn: '1h',
+        // Generate JWT token
+        const token = jwt.sign(
+            { 
+                _id: user._id, 
+                username: user.username,
+                email: user.email,
+                name: user.name,
+                role: user.role || 'user'
+            }, 
+            secret, 
+            {
+                expiresIn: '24h', // Extended to 24 hours
+            }
+        );
+
+        // Prepare user data to send to frontend (excluding password)
+        const userData = {
+            id: user._id,
+            username: user.username,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            phoneVerified: user.phoneVerified,
+            role: user.role || 'user',
+            displayName: user.name, // For navbar compatibility
+            photoURL: user.photoURL || null // Add this field to your User model if needed
+        };
+
+        res.status(200).json({ 
+            token, 
+            user: userData,
+            message: 'Logged in successfully' 
         });
-
-        res.status(200).json({ token, message: 'Logged in successfully' });
     } catch (error) {
         console.error('Error logging in:', error);
         return res.status(500).json({ error: 'Server error' });
@@ -137,7 +181,21 @@ const getUserInfo = async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
-        res.json(user);
+
+        // Format user data consistently
+        const userData = {
+            id: user._id,
+            username: user.username,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            phoneVerified: user.phoneVerified,
+            role: user.role || 'user',
+            displayName: user.name,
+            photoURL: user.photoURL || null
+        };
+
+        res.json(userData);
     }
     catch (error) {
         console.error('Error getting user info:', error);
@@ -145,10 +203,7 @@ const getUserInfo = async (req, res) => {
     }
 };
 
-
-
 // Twilio - OTP Verification
-
 require("dotenv").config();
 const twilio = require('twilio');
 const OtpCache = require('../models/OtpCache');
@@ -206,5 +261,5 @@ const verifyOtp = async (req, res) => {
   
     res.status(200).send("OTP verified successfully");
 };
-  
+
 module.exports = { createNewUser, loginUser, getUserInfo, sendOtp, verifyOtp, updateUserProfile };

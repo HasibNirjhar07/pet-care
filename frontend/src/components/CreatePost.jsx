@@ -8,7 +8,11 @@ import { Avatar } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-const CreatePost = () => {
+const CreatePost = ({ 
+  userName = 'John Doe',
+  userAvatar = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face',
+  isAuthenticated = true
+}) => {
   const [postText, setPostText] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [petType, setPetType] = useState("");
@@ -19,8 +23,18 @@ const CreatePost = () => {
       <CardContent className="p-4">
         {!showForm ? (
           <div className="flex items-center gap-3">
-            <Avatar className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-500 text-white">
-              <User size={20} />
+            <Avatar className="w-10 h-10">
+              {isAuthenticated && userAvatar ? (
+                <img 
+                  src={userAvatar} 
+                  alt={userName}
+                  className="w-full h-full rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-purple-600 to-pink-500 text-white flex items-center justify-center">
+                  <User size={20} />
+                </div>
+              )}
             </Avatar>
             <Button
               onClick={() => setShowForm(true)}
@@ -33,8 +47,18 @@ const CreatePost = () => {
         ) : (
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <Avatar className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-500 text-white">
-                <User size={20} />
+              <Avatar className="w-10 h-10">
+                {isAuthenticated && userAvatar ? (
+                  <img 
+                    src={userAvatar} 
+                    alt={userName}
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-purple-600 to-pink-500 text-white flex items-center justify-center">
+                    <User size={20} />
+                  </div>
+                )}
               </Avatar>
               <div>
                 <p className="text-sm font-semibold">Create Adoption Post</p>

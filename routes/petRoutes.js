@@ -1,5 +1,5 @@
 const express = require('express');
-const { createPetProfile, updatePetProfile, deletePetProfile, getPetProfile, addPetPhoto, removePetPhoto , getPetPhotos } = require('../controllers/petController');
+const { getAllPetsByUser, createPetProfile, updatePetProfile, deletePetProfile, getPetProfile, addPetPhoto, removePetPhoto , getPetPhotos } = require('../controllers/petController');
 const { jwtVerification } = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/uploadHandler');
 const router = express.Router();
@@ -24,5 +24,9 @@ router.patch('/photos/delete/:id', jwtVerification, removePetPhoto);
 
 // Get pet photos
 router.get('/photos/:id', jwtVerification, getPetPhotos);
+
+// backend route
+router.get('/myPets', jwtVerification, getAllPetsByUser);
+
 
 module.exports = router;

@@ -210,4 +210,22 @@ const getPetPhotos = async (req, res) => {
     }
 };
 
-module.exports = { createPetProfile, updatePetProfile, deletePetProfile, getPetProfile, addPetPhoto, removePetPhoto , getPetPhotos };
+const getAllPetsByUser = async (req, res) => {
+    const userId = req.user._id;
+
+    try {
+        const pets = await Pet.find({ ownerId: userId }).populate('ownerId', 'username name email');
+        if (!pets || pets.length === 0) {
+            return res.status(404).json({ message: "No pets found for this user" });
+        }
+        return res.status(200).json({
+            message: "Pets retrieved successfully",
+            pets,
+        });
+    } catch (error) {
+        console.error("Error fetching user's pets:", error);
+        return res.status(500).json({ message: "Error fetching user's pets", error: error.message });
+    }       
+}
+
+module.exports = { createPetProfile, updatePetProfile, deletePetProfile, getPetProfile, addPetPhoto, removePetPhoto , getPetPhotos, getAllPetsByUser };

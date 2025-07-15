@@ -10,3 +10,4 @@ router.get("/userInfo", jwtVerification, getUserInfo);
 router.put('/updateProfile', jwtVerification, updateUserProfile);
 
 module.exports = router;
+

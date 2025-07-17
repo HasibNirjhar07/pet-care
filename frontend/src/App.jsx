@@ -16,9 +16,9 @@ import { signOut, onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
 import About from "./pages/About/About";
 import CarePage from "./pages/CarePage";
+import ShopPage from "./pages/ShopPage";
 
 // Placeholder components (replace with actual components when available)
-const ShopPage = () => <div>Shop Page (Placeholder)</div>;
 const AdoptPage = () => <div>Adopt Page (Placeholder)</div>;
 const VetPortal = () => <div>Vet Portal Page (Placeholder)</div>;
 const AdminDashboard = () => <div>Admin Dashboard Page (Placeholder)</div>;

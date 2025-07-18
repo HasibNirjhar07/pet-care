@@ -17,9 +17,13 @@ import { auth } from "./firebase";
 import About from "./pages/About/About";
 import CarePage from "./pages/CarePage";
 import ShopPage from "./pages/ShopPage";
-
+import Adopt from "./pages/Adopt/adopt.jsx";
+import Browse from "./pages/Adopt/browse.jsx";
+import Homes from "./pages/Adopt/homes.jsx";
+import Post from "./pages/Adopt/post";
+import Requests from "./pages/Adopt/requests.jsx";
 // Placeholder components (replace with actual components when available)
-const AdoptPage = () => <div>Adopt Page (Placeholder)</div>;
+// const AdoptPage = () => <div>Adopt Page (Placeholder)</div>;
 const VetPortal = () => <div>Vet Portal Page (Placeholder)</div>;
 const AdminDashboard = () => <div>Admin Dashboard Page (Placeholder)</div>;
 
@@ -91,7 +95,7 @@ const AppContent = ({ user, setUser, handleLogout }) => {
             </ProtectedRoute>
           }
         />
-        {/* NEW: Added routes for navigation items */}
+        {/* Routes for navigation items */}
         <Route
           path="/care"
           element={
@@ -112,14 +116,14 @@ const AppContent = ({ user, setUser, handleLogout }) => {
           path="/adopt"
           element={
             <ProtectedRoute user={user}>
-              <AdoptPage />
+              <Adopt />
             </ProtectedRoute>
           }
         />
-        <Route path="/adopt/browse" element={<AdoptPage />} /> {/* Example sub-route */}
-        <Route path="/adopt/homes" element={<AdoptPage />} />
-        <Route path="/adopt/post" element={<AdoptPage />} />
-        <Route path="/adopt/requests" element={<AdoptPage />} />
+        <Route path="/adopt/browse" element={<Browse />} />{" "}
+        <Route path="/adopt/homes" element={<Homes />} />
+        <Route path="/adopt/post" element={<Post />} />
+        <Route path="/adopt/requests" element={<Requests />} />
         <Route
           path="/vet"
           element={

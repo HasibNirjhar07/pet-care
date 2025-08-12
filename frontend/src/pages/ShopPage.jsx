@@ -89,12 +89,12 @@ const ShopPage = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={async () => { await shopApi.appendProducts(); await load(); }}
-              className="hidden md:inline bg-white border border-purple-200 text-purple-600 px-3 py-1.5 rounded-full hover:bg-purple-50"
+              className="hidden md:inline bg-white border border-purple-200 text-purple-600 px-3 py-1.5 rounded-full hover:bg-purple-50 cursor-pointer"
               title="Append 20 sample products"
             >+20</button>
             <button
               onClick={async () => { await shopApi.seedProductsForce(); await load(); }}
-              className="hidden md:inline bg-white border border-red-200 text-red-600 px-3 py-1.5 rounded-full hover:bg-red-50"
+              className="hidden md:inline bg-white border border-red-200 text-red-600 px-3 py-1.5 rounded-full hover:bg-red-50 cursor-pointer"
               title="Force reseed catalog"
             >Reseed</button>
             <Link to="/shop/cart" className="text-purple-700 font-medium">View Cart →</Link>
@@ -113,7 +113,7 @@ const ShopPage = () => {
                 <h2 className="text-lg font-semibold text-purple-600 mb-2 text-center">{product.name}</h2>
                 <p className="text-gray-700 mb-2 text-center flex-grow">{product.description}</p>
                 <span className="text-pink-600 font-bold mb-4">${product.price.toFixed(2)}</span>
-                <button onClick={() => addToCart(product)} disabled={addingId === product._id} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full font-medium hover:scale-105 transition-all disabled:opacity-60 mt-auto">
+                <button onClick={() => addToCart(product)} disabled={addingId === product._id} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full font-medium hover:scale-105 transition-all disabled:opacity-60 mt-auto cursor-pointer">
                   {addingId === product._id ? 'Adding...' : 'Add to Cart'}
                 </button>
               </div>

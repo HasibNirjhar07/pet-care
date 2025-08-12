@@ -132,7 +132,7 @@ export default function PaymentPage() {
                     <button
                       key={m.key}
                       onClick={() => setMethod(m.key)}
-                      className={`px-4 py-2 rounded-full text-sm border ${method === m.key ? 'bg-purple-600 text-white border-purple-600' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                      className={`px-4 py-2 rounded-full text-sm border cursor-pointer ${method === m.key ? 'bg-purple-600 text-white border-purple-600' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
                     >
                       {m.label}
                     </button>
@@ -177,8 +177,8 @@ export default function PaymentPage() {
                       <p>Your card details are encrypted and processed securely. This is a mock gateway for demo purposes only.</p>
                     </div>
                     <div className="flex items-center justify-between pt-2">
-                      <button onClick={handleFail} className="px-4 py-2 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50">Cancel</button>
-                      <button onClick={handlePay} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-full font-medium">Pay {total > 0 ? `$${Number(total).toFixed(2)}` : ''}</button>
+                      <button onClick={handleFail} className="px-4 py-2 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer">Cancel</button>
+                      <button onClick={handlePay} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-full font-medium cursor-pointer hover:scale-105 transition-all">Pay {total > 0 ? `$${Number(total).toFixed(2)}` : ''}</button>
                     </div>
                   </div>
                 )}
@@ -190,8 +190,8 @@ export default function PaymentPage() {
                       <input className="w-full border rounded-lg px-3 py-2" placeholder="01XXXXXXXXX" maxLength={11} />
                     </div>
                     <div className="flex items-center justify-between pt-2">
-                      <button onClick={handleFail} className="px-4 py-2 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50">Cancel</button>
-                      <button onClick={handlePay} className="bg-[#E2136E] hover:brightness-110 text-white px-6 py-2 rounded-full font-medium">Pay with bKash</button>
+                      <button onClick={handleFail} className="px-4 py-2 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer">Cancel</button>
+                      <button onClick={handlePay} className="bg-[#E2136E] hover:brightness-110 text-white px-6 py-2 rounded-full font-medium cursor-pointer">Pay with bKash</button>
                     </div>
                   </div>
                 )}
@@ -203,8 +203,8 @@ export default function PaymentPage() {
                       <input className="w-full border rounded-lg px-3 py-2" placeholder="01XXXXXXXXX" maxLength={11} />
                     </div>
                     <div className="flex items-center justify-between pt-2">
-                      <button onClick={handleFail} className="px-4 py-2 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50">Cancel</button>
-                      <button onClick={handlePay} className="bg-[#F7941D] hover:brightness-110 text-white px-6 py-2 rounded-full font-medium">Pay with Nagad</button>
+                      <button onClick={handleFail} className="px-4 py-2 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer">Cancel</button>
+                      <button onClick={handlePay} className="bg-[#F7941D] hover:brightness-110 text-white px-6 py-2 rounded-full font-medium cursor-pointer">Pay with Nagad</button>
                     </div>
                   </div>
                 )}

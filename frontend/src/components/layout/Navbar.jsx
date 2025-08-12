@@ -218,6 +218,7 @@ const getNavigationItems = () => {
   );
 
   return (
+    <>
     <nav
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         isScrolled
@@ -226,7 +227,7 @@ const getNavigationItems = () => {
       }`}
     >
       <div className="mr-2 px-4">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <div className="flex">
             <Link to={getHomePath()} className="flex items-center group">
@@ -250,7 +251,7 @@ const getNavigationItems = () => {
                       navigate(item.to); // Navigate directly if no dropdown
                     }
                   }}
-                  className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                     currentPage === item.key
                       ? "bg-purple-100 text-purple-700"
                       : "text-gray-700 hover:bg-gray-100 hover:text-purple-600"
@@ -280,7 +281,7 @@ const getNavigationItems = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleSearch(e)}
-                className="w-full pl-10 pr-4 py-2 bg-gray-50 border-0 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-gray-50 border-0 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all"
               />
             </div>
           </div>
@@ -290,7 +291,7 @@ const getNavigationItems = () => {
             {isAuthenticated ? (
               <>
                 {/* Quick Actions */}
-                <button className="hidden md:flex items-center px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-sm font-medium hover:scale-105 transform transition-all">
+                <button className="hidden md:flex items-center px-4 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-sm font-medium hover:scale-105 transform transition-all">
                   <PlusCircle className="h-4 w-4 mr-1" />
                   Post Pet
                 </button>
@@ -348,7 +349,7 @@ const getNavigationItems = () => {
                 </Link>
                 <Link
                   to="/signup"
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-full font-medium hover:scale-105 transform transition-all shadow-lg"
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-medium hover:scale-105 transform transition-all shadow-lg"
                 >
                   Get Started
                 </Link>
@@ -459,6 +460,9 @@ const getNavigationItems = () => {
         </div>
       </div>
     </nav>
+  {/* Spacer to offset fixed navbar height */}
+  <div aria-hidden="true" className="h-20" />
+  </>
   );
 };
 

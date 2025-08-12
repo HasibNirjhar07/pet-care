@@ -12,6 +12,7 @@ const profileRoutes = require("./routes/profileRoutes");
 const petRoutes = require("./routes/petRoutes");
 const adoptionRoutes = require("./routes/adoptionRoutes");
 const shopRoutes = require("./routes/shopRoutes");
+const careRoutes = require("./routes/careRoutes");
 
 // Database connection
 mongoose.connect(mongoURL)
@@ -36,6 +37,7 @@ app.use("/profile", profileRoutes);
 app.use("/pet", petRoutes);
 app.use("/adoption", adoptionRoutes);
 app.use("/shop", shopRoutes);
+app.use("/api/care", careRoutes);
 
 // Server
 app.listen(PORT, () => {

@@ -30,6 +30,29 @@ export async function apiFetch(path, { method = 'GET', body, headers = {}, auth 
   return res.json();
 }
 
+export const careApi = {
+  getServices: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiFetch(`/api/care/services${query ? `?${query}` : ''}`, { auth: false });
+  },
+  getServiceById: (id) => apiFetch(`/api/care/services/${id}`, { auth: false }),
+  getAvailableSlots: (serviceId, date) => 
+    apiFetch(`/api/care/services/slots/available?serviceId=${serviceId}&date=${date}`, { auth: false }),
+  bookAppointment: (appointmentData) => 
+    apiFetch('/api/care/appointments', { method: 'POST', body: appointmentData }),
+  getAppointments: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiFetch(`/api/care/appointments${query ? `?${query}` : ''}`);
+  },
+  getUserAppointments: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiFetch(`/api/care/appointments${query ? `?${query}` : ''}`);
+  },
+  updateAppointmentStatus: (id, statusData) => 
+    apiFetch(`/api/care/appointments/${id}`, { method: 'PUT', body: statusData }),
+  seedServices: () => apiFetch('/api/care/services/seed', { method: 'POST' })
+};
+
 export const shopApi = {
   listProducts: () => apiFetch('/shop/products', { auth: false }),
   seedProducts: () => apiFetch('/shop/products/seed', { method: 'POST', auth: false }),

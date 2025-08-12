@@ -309,7 +309,7 @@ const getNavigationItems = () => {
 
                 {/* Shopping Cart */}
                 <div className="relative">
-                  <button className="p-2 text-gray-600 hover:text-purple-600 hover:bg-gray-100 rounded-full transition-colors">
+                  <button onClick={() => navigate('/shop/cart')} className="p-2 text-gray-600 hover:text-purple-600 hover:bg-gray-100 rounded-full transition-colors">
                     <ShoppingCart className="h-5 w-5" />
                     {cartCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-purple-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">

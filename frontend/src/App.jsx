@@ -17,11 +17,14 @@ import { auth } from "./firebase";
 import About from "./pages/About/About";
 import CarePage from "./pages/CarePage";
 import ShopPage from "./pages/ShopPage";
+import CartPage from "./pages/Shop/CartPage";
+import PaymentPage from "./pages/Shop/PaymentPage";
 import Adopt from "./pages/Adopt/adopt.jsx";
 import Browse from "./pages/Adopt/browse.jsx";
 import Homes from "./pages/Adopt/homes.jsx";
 import Post from "./pages/Adopt/post";
 import Requests from "./pages/Adopt/requests.jsx";
+import { shopApi } from "./lib/api";
 // Placeholder components (replace with actual components when available)
 // const AdoptPage = () => <div>Adopt Page (Placeholder)</div>;
 const VetPortal = () => <div>Vet Portal Page (Placeholder)</div>;
@@ -37,6 +40,31 @@ const ProtectedRoute = ({ user, children }) => {
 
 const AppContent = ({ user, setUser, handleLogout }) => {
   const location = useLocation();
+  const [cartCount, setCartCount] = useState(0);
+
+  useEffect(() => {
+    const loadCart = async () => {
+      if (!user) { setCartCount(0); return; }
+      try {
+        const c = await shopApi.getCart();
+        setCartCount(c?.items?.reduce((s, i) => s + i.quantity, 0) || 0);
+  } catch {
+        setCartCount(0);
+      }
+    };
+    loadCart();
+  }, [user, location.pathname]);
+
+  useEffect(() => {
+    const onCartUpdated = () => {
+      if (!user) return;
+      shopApi.getCart().then(c => {
+        setCartCount(c?.items?.reduce((s, i) => s + i.quantity, 0) || 0);
+      }).catch(() => {});
+    };
+    window.addEventListener('cart:updated', onCartUpdated);
+    return () => window.removeEventListener('cart:updated', onCartUpdated);
+  }, [user]);
 
   const getNavbarProps = () => {
     if (user) {
@@ -47,7 +75,7 @@ const AppContent = ({ user, setUser, handleLogout }) => {
           user.photoURL ||
           "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
         userRole: user.role || "user",
-        cartCount: 3,
+  cartCount,
         notificationCount: 5,
         onLogout: handleLogout,
         currentPage: getCurrentPage(location.pathname),
@@ -73,7 +101,7 @@ const AppContent = ({ user, setUser, handleLogout }) => {
 
   return (
     <>
-      <Navbar {...getNavbarProps()} />
+  <Navbar {...getNavbarProps()} />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/signin" element={<SignInPage onSignIn={setUser} />} />
@@ -109,6 +137,22 @@ const AppContent = ({ user, setUser, handleLogout }) => {
           element={
             <ProtectedRoute user={user}>
               <ShopPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/shop/cart"
+          element={
+            <ProtectedRoute user={user}>
+              <CartPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/shop/payment"
+          element={
+            <ProtectedRoute user={user}>
+              <PaymentPage />
             </ProtectedRoute>
           }
         />

@@ -14,6 +14,38 @@ export default function PaymentPage() {
 
   const navigate = useNavigate();
 
+  const slugify = (s = "") => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+
+  const SmartImage = ({ product, className }) => {
+    const candidates = useMemo(() => {
+      const list = [];
+      const img = product?.image || "";
+      if (img) list.push(img); // absolute or /products/... set from backend
+      const nameSlug = slugify(product?.name || "");
+      const catSlug = slugify(product?.category || "");
+      const exts = ["jpg", "png", "jpeg", "webp"];
+      if (nameSlug) exts.forEach((ext) => list.push(`/products/${nameSlug}.${ext}`));
+      if (catSlug) exts.forEach((ext) => list.push(`/products/${catSlug}.${ext}`));
+      // Product-specific placeholder based on product ID or name
+      list.push(`https://via.placeholder.com/64x64/9333ea/ffffff?text=${encodeURIComponent(product?.name?.slice(0, 6) || 'Item')}`);
+      return list;
+    }, [product]);
+
+    const [idx, setIdx] = useState(0);
+    const src = candidates[idx] || candidates[candidates.length - 1];
+    return (
+      <div className={`${className} bg-gray-100 rounded overflow-hidden flex items-center justify-center`}>
+        <img
+          src={src}
+          alt={product?.name || 'Product'}
+          className="w-full h-full object-cover"
+          loading="lazy"
+          onError={() => setIdx((i) => (i < candidates.length - 1 ? i + 1 : i))}
+        />
+      </div>
+    );
+  };
+
   const handlePay = async () => {
     try {
       const txId = `MOCK-${Date.now().toString().slice(-8)}`;
@@ -209,7 +241,7 @@ export default function PaymentPage() {
               )}
               {(cart?.items || []).map((i, idx) => (
                 <div key={(i.product?._id) || idx} className="flex items-center gap-3">
-                  <img src={i.product?.image || 'https://via.placeholder.com/64'} alt={i.product?.name || 'Product'} className="w-14 h-14 object-cover rounded" />
+                  <SmartImage product={i.product} className="w-14 h-14 object-cover rounded" />
                   <div className="flex-1">
                     <div className="text-sm font-medium">{i.product?.name || 'Product'}</div>
                     <div className="text-xs text-gray-500">Qty {i.quantity}</div>

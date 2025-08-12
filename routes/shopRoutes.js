@@ -19,4 +19,7 @@ router.post('/checkout', jwtVerification, ctrl.createCheckout);
 router.post('/payment/success', jwtVerification, ctrl.paymentSuccess);
 router.post('/payment/fail', jwtVerification, ctrl.paymentFail);
 
+// Admin/dev helpers
+router.post('/products/image-all', jwtVerification, ctrl.setImageForAllProducts);
+
 module.exports = router;

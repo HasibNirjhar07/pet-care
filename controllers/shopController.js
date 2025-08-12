@@ -63,33 +63,33 @@ exports.seedProducts = async (req, res) => {
 
     const seed = [
       // Food - Dog
-      { name: 'Premium Dog Kibble - Chicken', description: 'High-protein kibble for active dogs.', price: 22, category: 'Food', brand: 'PetPro', tags: ['dog', 'food', 'chicken'], variants: [{ name: '2kg', price: 22, sku: 'PP-DK-CH-2', stock: 50 }, { name: '5kg', price: 45, sku: 'PP-DK-CH-5', stock: 30 }] },
-      { name: 'Grain-Free Dog Food - Salmon', description: 'Gentle on tummies, rich in omega-3.', price: 28, category: 'Food', brand: 'CanineCare', tags: ['dog', 'food', 'salmon'] },
-      { name: 'Puppy Starter Food', description: 'Balanced nutrition for puppies.', price: 18, category: 'Food', brand: 'StartPaws', tags: ['dog', 'food', 'puppy'] },
+      { name: 'Premium Dog Kibble - Chicken', description: 'High-protein kibble for active dogs.', price: 22, category: 'Food', brand: 'PetPro', tags: ['dog', 'food', 'chicken'], image: '/products/premium-dog-kibble-chicken.jpg', images: ['/products/premium-dog-kibble-chicken.jpg'], variants: [{ name: '2kg', price: 22, sku: 'PP-DK-CH-2', stock: 50 }, { name: '5kg', price: 45, sku: 'PP-DK-CH-5', stock: 30 }] },
+      { name: 'Grain-Free Dog Food - Salmon', description: 'Gentle on tummies, rich in omega-3.', price: 28, category: 'Food', brand: 'CanineCare', tags: ['dog', 'food', 'salmon'], image: '/products/grain-free-dog-food-salmon.jpg', images: ['/products/grain-free-dog-food-salmon.jpg'] },
+      { name: 'Puppy Starter Food', description: 'Balanced nutrition for puppies.', price: 18, category: 'Food', brand: 'StartPaws', tags: ['dog', 'food', 'puppy'], image: '/products/puppy-starter-food.jpg', images: ['/products/puppy-starter-food.jpg'] },
       // Food - Cat
-      { name: 'Cat Dry Food - Tuna', description: 'Crunchy bites with tuna flavor.', price: 16, category: 'Food', brand: 'FelineFine', tags: ['cat', 'food', 'tuna'], variants: [{ name: '1.5kg', price: 16, sku: 'FF-CF-TU-1.5', stock: 70 }] },
-      { name: 'Wet Cat Food Variety Pack', description: '12-pack wet food for picky eaters.', price: 20, category: 'Food', brand: 'MeowMix', tags: ['cat', 'food', 'wet'] },
+      { name: 'Cat Dry Food - Tuna', description: 'Crunchy bites with tuna flavor.', price: 16, category: 'Food', brand: 'FelineFine', tags: ['cat', 'food', 'tuna'], image: '/products/cat-dry-food-tuna.jpg', images: ['/products/cat-dry-food-tuna.jpg'], variants: [{ name: '1.5kg', price: 16, sku: 'FF-CF-TU-1.5', stock: 70 }] },
+      { name: 'Wet Cat Food Variety Pack', description: '12-pack wet food for picky eaters.', price: 20, category: 'Food', brand: 'MeowMix', tags: ['cat', 'food', 'wet'], image: '/products/wet-cat-food-variety-pack.jpg', images: ['/products/wet-cat-food-variety-pack.jpg'] },
       // Accessories
-      { name: 'Cat Scratching Post Deluxe', description: 'Tall, sturdy scratching post.', price: 32, category: 'Accessories', brand: 'Purrfect', tags: ['cat', 'scratcher'] },
-      { name: 'Adjustable Dog Collar', description: 'Comfortable nylon dog collar.', price: 10, category: 'Accessories', brand: 'PetPro', tags: ['dog', 'collar'], variants: [{ name: 'Small', price: 10, sku: 'PP-DC-S', stock: 40 }, { name: 'Medium', price: 12, sku: 'PP-DC-M', stock: 40 }, { name: 'Large', price: 14, sku: 'PP-DC-L', stock: 40 }] },
-      { name: 'Leash - Reflective', description: 'Reflective leash for night walks.', price: 15, category: 'Accessories', brand: 'NightPaws', tags: ['dog', 'leash', 'reflective'] },
-      { name: 'Bird Cage - Medium', description: 'Ideal for parakeets and finches.', price: 55, category: 'Housing', brand: 'FeatherHome', tags: ['bird', 'cage'] },
+      { name: 'Cat Scratching Post Deluxe', description: 'Tall, sturdy scratching post.', price: 32, category: 'Accessories', brand: 'Purrfect', tags: ['cat', 'scratcher'], image: '/products/cat-scratching-post-deluxe.jpg', images: ['/products/cat-scratching-post-deluxe.jpg'] },
+      { name: 'Adjustable Dog Collar', description: 'Comfortable nylon dog collar.', price: 10, category: 'Accessories', brand: 'PetPro', tags: ['dog', 'collar'], image: '/products/adjustable-dog-collar.jpg', images: ['/products/adjustable-dog-collar.jpg'], variants: [{ name: 'Small', price: 10, sku: 'PP-DC-S', stock: 40 }, { name: 'Medium', price: 12, sku: 'PP-DC-M', stock: 40 }, { name: 'Large', price: 14, sku: 'PP-DC-L', stock: 40 }] },
+      { name: 'Leash - Reflective', description: 'Reflective leash for night walks.', price: 15, category: 'Accessories', brand: 'NightPaws', tags: ['dog', 'leash', 'reflective'], image: '/products/leash-reflective.jpg', images: ['/products/leash-reflective.jpg'] },
+      { name: 'Bird Cage - Medium', description: 'Ideal for parakeets and finches.', price: 55, category: 'Housing', brand: 'FeatherHome', tags: ['bird', 'cage'], image: '/products/bird-cage-medium.jpg', images: ['/products/bird-cage-medium.jpg'] },
       // Care & Grooming
-      { name: 'Pet Shampoo - Sensitive Skin', description: 'Soap-free, tearless formula.', price: 12, category: 'Care', brand: 'GentlePet', tags: ['grooming', 'shampoo'] },
-      { name: 'Pet Conditioner', description: 'Silky coat conditioner.', price: 13, category: 'Care', brand: 'GentlePet', tags: ['grooming', 'conditioner'] },
-      { name: 'Nail Clippers', description: 'Safe and easy nail trimming.', price: 9, category: 'Care', brand: 'TrimPaws', tags: ['grooming'] },
+      { name: 'Pet Shampoo - Sensitive Skin', description: 'Soap-free, tearless formula.', price: 12, category: 'Care', brand: 'GentlePet', tags: ['grooming', 'shampoo'], image: '/products/pet-shampoo-sensitive-skin.jpg', images: ['/products/pet-shampoo-sensitive-skin.jpg'] },
+      { name: 'Pet Conditioner', description: 'Silky coat conditioner.', price: 13, category: 'Care', brand: 'GentlePet', tags: ['grooming', 'conditioner'], image: '/products/pet-conditioner.jpg', images: ['/products/pet-conditioner.jpg'] },
+      { name: 'Nail Clippers', description: 'Safe and easy nail trimming.', price: 9, category: 'Care', brand: 'TrimPaws', tags: ['grooming'], image: '/products/nail-clippers.jpg', images: ['/products/nail-clippers.jpg'] },
       // Litter & Hygiene
-      { name: 'Clumping Cat Litter 10kg', description: 'Low dust, strong clumping.', price: 19, category: 'Hygiene', brand: 'CleanKitty', tags: ['cat', 'litter'] },
-      { name: 'Puppy Training Pads - 50 pack', description: 'Leak-proof and quick-dry.', price: 17, category: 'Hygiene', brand: 'HouseTrain', tags: ['dog', 'pads'] },
+      { name: 'Clumping Cat Litter 10kg', description: 'Low dust, strong clumping.', price: 19, category: 'Hygiene', brand: 'CleanKitty', tags: ['cat', 'litter'], image: '/products/clumping-cat-litter-10kg.jpg', images: ['/products/clumping-cat-litter-10kg.jpg'] },
+      { name: 'Puppy Training Pads - 50 pack', description: 'Leak-proof and quick-dry.', price: 17, category: 'Hygiene', brand: 'HouseTrain', tags: ['dog', 'pads'], image: '/products/puppy-training-pads-50-pack.jpg', images: ['/products/puppy-training-pads-50-pack.jpg'] },
       // Treats
-      { name: 'Dog Treats - Beef Jerky', description: 'High-value training treats.', price: 11, category: 'Treats', brand: 'GoodBoy', tags: ['dog', 'treats'] },
-      { name: 'Cat Treats - Salmon Bites', description: 'Crunchy snack for cats.', price: 8, category: 'Treats', brand: 'PurrSnacks', tags: ['cat', 'treats'] },
+      { name: 'Dog Treats - Beef Jerky', description: 'High-value training treats.', price: 11, category: 'Treats', brand: 'GoodBoy', tags: ['dog', 'treats'], image: '/products/dog-treats-beef-jerky.jpg', images: ['/products/dog-treats-beef-jerky.jpg'] },
+      { name: 'Cat Treats - Salmon Bites', description: 'Crunchy snack for cats.', price: 8, category: 'Treats', brand: 'PurrSnacks', tags: ['cat', 'treats'], image: '/products/cat-treats-salmon-bites.jpg', images: ['/products/cat-treats-salmon-bites.jpg'] },
       // Toys
-      { name: 'Squeaky Ball - 3 Pack', description: 'Durable squeaky balls.', price: 9, category: 'Toys', brand: 'PlayPaws', tags: ['dog', 'toy'] },
-      { name: 'Feather Wand Toy', description: 'Interactive cat wand.', price: 7, category: 'Toys', brand: 'Purrfect', tags: ['cat', 'toy'] },
+      { name: 'Squeaky Ball - 3 Pack', description: 'Durable squeaky balls.', price: 9, category: 'Toys', brand: 'PlayPaws', tags: ['dog', 'toy'], image: '/products/squeaky-ball-3-pack.jpg', images: ['/products/squeaky-ball-3-pack.jpg'] },
+      { name: 'Feather Wand Toy', description: 'Interactive cat wand.', price: 7, category: 'Toys', brand: 'Purrfect', tags: ['cat', 'toy'], image: '/products/feather-wand-toy.jpg', images: ['/products/feather-wand-toy.jpg'] },
       // Bowls & Feeders
-      { name: 'Stainless Steel Bowl', description: 'Non-slip pet bowl.', price: 8, category: 'Feeders', brand: 'PetPro', tags: ['bowl'] },
-      { name: 'Automatic Water Dispenser', description: 'Gravity-fed waterer.', price: 20, category: 'Feeders', brand: 'HydraPet', tags: ['water', 'dispenser'] },
+      { name: 'Stainless Steel Bowl', description: 'Non-slip pet bowl.', price: 8, category: 'Feeders', brand: 'PetPro', tags: ['bowl'], image: '/products/stainless-steel-bowl.jpg', images: ['/products/stainless-steel-bowl.jpg'] },
+      { name: 'Automatic Water Dispenser', description: 'Gravity-fed waterer.', price: 20, category: 'Feeders', brand: 'HydraPet', tags: ['water', 'dispenser'], image: '/products/automatic-water-dispenser.jpg', images: ['/products/automatic-water-dispenser.jpg'] },
     ];
 
     const result = await Product.insertMany(seed);
@@ -103,34 +103,34 @@ exports.seedProducts = async (req, res) => {
 exports.appendProducts = async (req, res) => {
   try {
     const extra = [
-      { name: 'Orthopedic Dog Bed', description: 'Memory foam bed for joint support.', price: 49, category: 'Accessories', brand: 'SleepPaws', tags: ['dog', 'bed'] },
-      { name: 'No-Pull Harness', description: 'Comfortable harness to reduce pulling.', price: 24, category: 'Accessories', brand: 'PetPro', tags: ['dog', 'harness'] },
-      { name: 'Elevated Feeder Stand', description: 'Improves posture and digestion.', price: 26, category: 'Feeders', brand: 'PetPro', tags: ['feeder'] },
-      { name: 'Interactive Treat Puzzle', description: 'Mental stimulation toy for pets.', price: 19, category: 'Toys', brand: 'BrainyPets', tags: ['toy', 'puzzle'] },
-      { name: 'Cat Litter Mat', description: 'Traps litter from paws to keep floors clean.', price: 14, category: 'Hygiene', brand: 'CleanKitty', tags: ['cat', 'litter'] },
-      { name: 'Deshedding Brush', description: 'Reduces shedding up to 90%.', price: 15, category: 'Care', brand: 'TrimPaws', tags: ['grooming', 'brush'] },
-      { name: 'Catnip Mice 5-Pack', description: 'Irresistible catnip-filled toys.', price: 9, category: 'Toys', brand: 'Purrfect', tags: ['cat', 'toy'] },
-      { name: 'LED Safety Collar', description: 'High-visibility for night walks.', price: 13, category: 'Accessories', brand: 'NightPaws', tags: ['collar', 'led'] },
-      { name: 'Dog Raincoat', description: 'Waterproof coat for rainy days.', price: 21, category: 'Accessories', brand: 'DryDog', tags: ['coat', 'rain'], variants: [
+      { name: 'Orthopedic Dog Bed', description: 'Memory foam bed for joint support.', price: 49, category: 'Accessories', brand: 'SleepPaws', tags: ['dog', 'bed'], image: '/products/orthopedic-dog-bed.jpg', images: ['/products/orthopedic-dog-bed.jpg'] },
+      { name: 'No-Pull Harness', description: 'Comfortable harness to reduce pulling.', price: 24, category: 'Accessories', brand: 'PetPro', tags: ['dog', 'harness'], image: '/products/no-pull-harness.jpg', images: ['/products/no-pull-harness.jpg'] },
+      { name: 'Elevated Feeder Stand', description: 'Improves posture and digestion.', price: 26, category: 'Feeders', brand: 'PetPro', tags: ['feeder'], image: '/products/elevated-feeder-stand.jpg', images: ['/products/elevated-feeder-stand.jpg'] },
+      { name: 'Interactive Treat Puzzle', description: 'Mental stimulation toy for pets.', price: 19, category: 'Toys', brand: 'BrainyPets', tags: ['toy', 'puzzle'], image: '/products/interactive-treat-puzzle.jpg', images: ['/products/interactive-treat-puzzle.jpg'] },
+      { name: 'Cat Litter Mat', description: 'Traps litter from paws to keep floors clean.', price: 14, category: 'Hygiene', brand: 'CleanKitty', tags: ['cat', 'litter'], image: '/products/cat-litter-mat.jpg', images: ['/products/cat-litter-mat.jpg'] },
+      { name: 'Deshedding Brush', description: 'Reduces shedding up to 90%.', price: 15, category: 'Care', brand: 'TrimPaws', tags: ['grooming', 'brush'], image: '/products/deshedding-brush.jpg', images: ['/products/deshedding-brush.jpg'] },
+      { name: 'Catnip Mice 5-Pack', description: 'Irresistible catnip-filled toys.', price: 9, category: 'Toys', brand: 'Purrfect', tags: ['cat', 'toy'], image: '/products/catnip-mice-5-pack.jpg', images: ['/products/catnip-mice-5-pack.jpg'] },
+      { name: 'LED Safety Collar', description: 'High-visibility for night walks.', price: 13, category: 'Accessories', brand: 'NightPaws', tags: ['collar', 'led'], image: '/products/led-safety-collar.jpg', images: ['/products/led-safety-collar.jpg'] },
+      { name: 'Dog Raincoat', description: 'Waterproof coat for rainy days.', price: 21, category: 'Accessories', brand: 'DryDog', tags: ['coat', 'rain'], image: '/products/dog-raincoat.jpg', images: ['/products/dog-raincoat.jpg'], variants: [
         { name: 'Small', price: 21, sku: 'DD-RC-S', stock: 25 },
         { name: 'Medium', price: 23, sku: 'DD-RC-M', stock: 25 },
         { name: 'Large', price: 25, sku: 'DD-RC-L', stock: 25 },
       ] },
-      { name: 'Cooling Mat', description: 'Keeps pets cool in hot weather.', price: 27, category: 'Accessories', brand: 'ChillPet', tags: ['cooling'] },
-      { name: 'Travel Water Bottle', description: 'Leak-proof bottle with bowl.', price: 12, category: 'Feeders', brand: 'HydraPet', tags: ['travel', 'water'] },
-      { name: 'Slow Feeder Bowl', description: 'Helps prevent bloating and gulping.', price: 11, category: 'Feeders', brand: 'PetPro', tags: ['bowl', 'slow'] },
-      { name: 'Dental Chews - Large', description: 'Supports dental health.', price: 15, category: 'Treats', brand: 'GoodBoy', tags: ['dog', 'dental'] },
-      { name: 'Freeze-Dried Liver Treats', description: 'Single-ingredient training treats.', price: 13, category: 'Treats', brand: 'PureBites', tags: ['treats'] },
-      { name: 'Flea & Tick Spot-On (Medium Dogs)', description: 'Monthly protection.', price: 29, category: 'Care', brand: 'ShieldPet', tags: ['flea', 'tick'] },
-      { name: 'Ear Cleaning Solution', description: 'Gentle cleanser for sensitive ears.', price: 10, category: 'Care', brand: 'GentlePet', tags: ['ear', 'cleaning'] },
-      { name: 'Calming Spray', description: 'Reduces stress and anxiety.', price: 16, category: 'Care', brand: 'CalmPaws', tags: ['calming'] },
-      { name: 'Training Clicker', description: 'Effective positive reinforcement tool.', price: 6, category: 'Accessories', brand: 'TrainPro', tags: ['training'] },
-      { name: 'Retractable Leash 5m', description: 'Durable leash with lock.', price: 17, category: 'Accessories', brand: 'WalkEasy', tags: ['leash'] },
-      { name: 'Bird Perch Set', description: 'Natural wood perches for cages.', price: 12, category: 'Accessories', brand: 'FeatherHome', tags: ['bird'] },
-      { name: 'Hamster Wheel - Silent', description: 'Noise-free running wheel.', price: 14, category: 'Accessories', brand: 'QuietRun', tags: ['small-pet'] },
-      { name: 'Aquarium Water Conditioner', description: 'Removes chlorine and chloramine.', price: 9, category: 'Care', brand: 'AquaSafe', tags: ['aquarium'] },
-      { name: 'Reptile Heat Lamp 75W', description: 'Provides basking heat.', price: 22, category: 'Accessories', brand: 'ReptiGlow', tags: ['reptile'] },
-      { name: 'Cat Window Hammock', description: 'Cozy perch for window lounging.', price: 25, category: 'Accessories', brand: 'PurrLounge', tags: ['cat', 'bed'] },
+      { name: 'Cooling Mat', description: 'Keeps pets cool in hot weather.', price: 27, category: 'Accessories', brand: 'ChillPet', tags: ['cooling'], image: '/products/cooling-mat.jpg', images: ['/products/cooling-mat.jpg'] },
+      { name: 'Travel Water Bottle', description: 'Leak-proof bottle with bowl.', price: 12, category: 'Feeders', brand: 'HydraPet', tags: ['travel', 'water'], image: '/products/travel-water-bottle.jpg', images: ['/products/travel-water-bottle.jpg'] },
+      { name: 'Slow Feeder Bowl', description: 'Helps prevent bloating and gulping.', price: 11, category: 'Feeders', brand: 'PetPro', tags: ['bowl', 'slow'], image: '/products/slow-feeder-bowl.jpg', images: ['/products/slow-feeder-bowl.jpg'] },
+      { name: 'Dental Chews - Large', description: 'Supports dental health.', price: 15, category: 'Treats', brand: 'GoodBoy', tags: ['dog', 'dental'], image: '/products/dental-chews-large.jpg', images: ['/products/dental-chews-large.jpg'] },
+      { name: 'Freeze-Dried Liver Treats', description: 'Single-ingredient training treats.', price: 13, category: 'Treats', brand: 'PureBites', tags: ['treats'], image: '/products/freeze-dried-liver-treats.jpg', images: ['/products/freeze-dried-liver-treats.jpg'] },
+      { name: 'Flea & Tick Spot-On (Medium Dogs)', description: 'Monthly protection.', price: 29, category: 'Care', brand: 'ShieldPet', tags: ['flea', 'tick'], image: '/products/flea-tick-spot-on-medium-dogs.jpg', images: ['/products/flea-tick-spot-on-medium-dogs.jpg'] },
+      { name: 'Ear Cleaning Solution', description: 'Gentle cleanser for sensitive ears.', price: 10, category: 'Care', brand: 'GentlePet', tags: ['ear', 'cleaning'], image: '/products/ear-cleaning-solution.jpg', images: ['/products/ear-cleaning-solution.jpg'] },
+      { name: 'Calming Spray', description: 'Reduces stress and anxiety.', price: 16, category: 'Care', brand: 'CalmPaws', tags: ['calming'], image: '/products/calming-spray.jpg', images: ['/products/calming-spray.jpg'] },
+      { name: 'Training Clicker', description: 'Effective positive reinforcement tool.', price: 6, category: 'Accessories', brand: 'TrainPro', tags: ['training'], image: '/products/training-clicker.jpg', images: ['/products/training-clicker.jpg'] },
+      { name: 'Retractable Leash 5m', description: 'Durable leash with lock.', price: 17, category: 'Accessories', brand: 'WalkEasy', tags: ['leash'], image: '/products/retractable-leash-5m.jpg', images: ['/products/retractable-leash-5m.jpg'] },
+      { name: 'Bird Perch Set', description: 'Natural wood perches for cages.', price: 12, category: 'Accessories', brand: 'FeatherHome', tags: ['bird'], image: '/products/bird-perch-set.jpg', images: ['/products/bird-perch-set.jpg'] },
+      { name: 'Hamster Wheel - Silent', description: 'Noise-free running wheel.', price: 14, category: 'Accessories', brand: 'QuietRun', tags: ['small-pet'], image: '/products/hamster-wheel-silent.jpg', images: ['/products/hamster-wheel-silent.jpg'] },
+      { name: 'Aquarium Water Conditioner', description: 'Removes chlorine and chloramine.', price: 9, category: 'Care', brand: 'AquaSafe', tags: ['aquarium'], image: '/products/aquarium-water-conditioner.jpg', images: ['/products/aquarium-water-conditioner.jpg'] },
+      { name: 'Reptile Heat Lamp 75W', description: 'Provides basking heat.', price: 22, category: 'Accessories', brand: 'ReptiGlow', tags: ['reptile'], image: '/products/reptile-heat-lamp-75w.jpg', images: ['/products/reptile-heat-lamp-75w.jpg'] },
+      { name: 'Cat Window Hammock', description: 'Cozy perch for window lounging.', price: 25, category: 'Accessories', brand: 'PurrLounge', tags: ['cat', 'bed'], image: '/products/cat-window-hammock.jpg', images: ['/products/cat-window-hammock.jpg'] },
     ];
     const result = await Product.insertMany(extra);
     res.json({ message: 'Appended products', count: result.length });
@@ -277,5 +277,17 @@ exports.paymentFail = async (req, res) => {
     res.json({ message: 'Marked as failed', order });
   } catch (e) {
     res.status(500).json({ error: 'Failed to mark payment failed' });
+  }
+};
+
+// Admin/dev helper: set one image for all products quickly
+exports.setImageForAllProducts = async (req, res) => {
+  try {
+    const { image } = req.body; // e.g., '/products/ear-cleaning-solution.jpg'
+    if (!image || typeof image !== 'string') return res.status(400).json({ error: 'Provide image path string (e.g., /products/your-file.jpg)' });
+    const result = await Product.updateMany({}, { $set: { image, images: [image], updatedAt: new Date() } });
+    res.json({ message: 'Updated image for all products', matched: result.matchedCount || result.nMatched, modified: result.modifiedCount || result.nModified });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to update images for all products' });
   }
 };

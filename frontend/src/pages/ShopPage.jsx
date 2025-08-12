@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { shopApi } from "@/lib/api";
 import { Link } from "react-router-dom";
 
@@ -36,6 +36,38 @@ const ShopPage = () => {
   };
 
   useEffect(() => { load(); }, []);
+
+  const slugify = (s = "") => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+
+  const SmartImage = ({ product, className }) => {
+    const candidates = useMemo(() => {
+      const list = [];
+      const img = product?.image || "";
+      if (img) list.push(img); // absolute or /products/... set from backend
+      const nameSlug = slugify(product?.name || "");
+      const catSlug = slugify(product?.category || "");
+      const exts = ["jpg", "png", "jpeg", "webp"];
+      if (nameSlug) exts.forEach((ext) => list.push(`/products/${nameSlug}.${ext}`));
+      if (catSlug) exts.forEach((ext) => list.push(`/products/${catSlug}.${ext}`));
+      // Product-specific placeholder based on product ID or name
+      list.push(`https://via.placeholder.com/200x200/9333ea/ffffff?text=${encodeURIComponent(product?.name?.slice(0, 10) || 'Product')}`);
+      return list;
+    }, [product]);
+
+    const [idx, setIdx] = useState(0);
+    const src = candidates[idx] || candidates[candidates.length - 1];
+    return (
+      <div className={`${className} bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center`}>
+        <img
+          src={src}
+          alt={product?.name || 'Product'}
+          className="w-full h-full object-cover"
+          loading="lazy"
+          onError={() => setIdx((i) => (i < candidates.length - 1 ? i + 1 : i))}
+        />
+      </div>
+    );
+  };
 
   const addToCart = async (product) => {
     try {
@@ -75,13 +107,13 @@ const ShopPage = () => {
           <div className="text-red-600">{error}</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {products.map((product) => (
-              <div key={product._id} className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center hover:scale-105 transition-transform">
-                <img src={product.image} alt={product.name} className="w-32 h-32 object-cover rounded-lg mb-4" />
-                <h2 className="text-lg font-semibold text-purple-600 mb-2">{product.name}</h2>
-                <p className="text-gray-700 mb-2 text-center">{product.description}</p>
+      {products.map((product) => (
+              <div key={product._id} className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center hover:scale-105 transition-transform h-full">
+                <SmartImage product={product} className="w-32 h-32 object-cover rounded-lg mb-4" />
+                <h2 className="text-lg font-semibold text-purple-600 mb-2 text-center">{product.name}</h2>
+                <p className="text-gray-700 mb-2 text-center flex-grow">{product.description}</p>
                 <span className="text-pink-600 font-bold mb-4">${product.price.toFixed(2)}</span>
-                <button onClick={() => addToCart(product)} disabled={addingId === product._id} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full font-medium hover:scale-105 transition-all disabled:opacity-60">
+                <button onClick={() => addToCart(product)} disabled={addingId === product._id} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full font-medium hover:scale-105 transition-all disabled:opacity-60 mt-auto">
                   {addingId === product._id ? 'Adding...' : 'Add to Cart'}
                 </button>
               </div>

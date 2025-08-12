@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { shopApi } from '@/lib/api';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -7,6 +7,38 @@ export default function CartPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  const slugify = (s = "") => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+
+  const SmartImage = ({ product, className }) => {
+    const candidates = useMemo(() => {
+      const list = [];
+      const img = product?.image || "";
+      if (img) list.push(img); // absolute or /products/... set from backend
+      const nameSlug = slugify(product?.name || "");
+      const catSlug = slugify(product?.category || "");
+      const exts = ["jpg", "png", "jpeg", "webp"];
+      if (nameSlug) exts.forEach((ext) => list.push(`/products/${nameSlug}.${ext}`));
+      if (catSlug) exts.forEach((ext) => list.push(`/products/${catSlug}.${ext}`));
+      // Product-specific placeholder based on product ID or name
+      list.push(`https://via.placeholder.com/80x80/9333ea/ffffff?text=${encodeURIComponent(product?.name?.slice(0, 8) || 'Item')}`);
+      return list;
+    }, [product]);
+
+    const [idx, setIdx] = useState(0);
+    const src = candidates[idx] || candidates[candidates.length - 1];
+    return (
+      <div className={`${className} bg-gray-100 rounded overflow-hidden flex items-center justify-center`}>
+        <img
+          src={src}
+          alt={product?.name || 'Product'}
+          className="w-full h-full object-cover"
+          loading="lazy"
+          onError={() => setIdx((i) => (i < candidates.length - 1 ? i + 1 : i))}
+        />
+      </div>
+    );
+  };
 
   const load = async () => {
     try {
@@ -70,7 +102,7 @@ export default function CartPage() {
             const pid = p._id || `local-${idx}`;
             return (
               <div className="p-4 flex items-center gap-4" key={pid}>
-                <img src={p.image || 'https://via.placeholder.com/80'} alt={p.name || 'Product'} className="w-20 h-20 object-cover rounded" />
+                <SmartImage product={p} className="w-20 h-20 object-cover rounded" />
                 <div className="flex-1">
                   <div className="font-medium">{p.name || 'Product removed'}</div>
                   <div className="text-gray-500">${(p.price || 0).toFixed(2)}</div>

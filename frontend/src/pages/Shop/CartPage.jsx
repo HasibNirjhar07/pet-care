@@ -38,7 +38,7 @@ export default function CartPage() {
     try {
       const res = await shopApi.createCheckout();
       // Mock: redirect to payment URL (our frontend page)
-      navigate(`/shop/payment?orderId=${res.orderId}`);
+  navigate(`/shop/payment?orderId=${res.orderId}&amount=${encodeURIComponent(res.amount || total)}`);
   window.dispatchEvent(new Event('cart:updated'));
     } catch (e) {
       setError(e.message);

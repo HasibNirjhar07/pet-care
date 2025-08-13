@@ -5,13 +5,15 @@ const cors = require('cors');
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 require("dotenv").config();
-const PORT = process.env.PORT || 7000;
-const mongoURL = process.env.MongoDB_URL;
+const PORT = Number(process.env.PORT) || 7000;
+const mongoURL = process.env.MongoDB_URL || process.env.MONGO_URL;
 
 const authRoutes = require("./routes/authRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const petRoutes = require("./routes/petRoutes");
 const adoptionRoutes = require("./routes/adoptionRoutes");
+const shopRoutes = require("./routes/shopRoutes");
+const careRoutes = require("./routes/careRoutes");
 
 // Database connection
 mongoose.connect(mongoURL)
@@ -21,10 +23,10 @@ mongoose.connect(mongoURL)
     console.log("Database connection failed:", error)
 );
 
-// Frontend CORS configuration
+// Frontend CORS configuration (permissive for dev)
 app.use(cors({
-  origin: 'http://localhost:5173', // Vite's default dev server
-  credentials: true, // if you're using cookies or auth headers
+  origin: (origin, cb) => cb(null, true),
+  credentials: true,
 }));
 
 // Middleware
@@ -40,6 +42,8 @@ app.use("/api/auth", authRoutes);
 app.use("/profile", profileRoutes);
 app.use("/pet", petRoutes);
 app.use("/adoption", adoptionRoutes);
+app.use("/shop", shopRoutes);
+app.use("/api/care", careRoutes);
 
 // Server
 app.listen(PORT, () => {

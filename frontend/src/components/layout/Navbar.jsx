@@ -158,7 +158,7 @@ const getNavigationItems = () => {
         <Link
           key={index}
           to={item.to}
-          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors"
+          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors cursor-pointer"
         >
           {item.name}
         </Link>
@@ -185,21 +185,21 @@ const getNavigationItems = () => {
       <div className="py-2">
         <Link
           to="/profile"
-          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors"
+          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors cursor-pointer"
         >
           <User className="h-4 w-4 mr-3" />
           My Profile
         </Link>
         <Link
           to="/settings"
-          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors"
+          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors cursor-pointer"
         >
           <Settings className="h-4 w-4 mr-3" />
           Settings
         </Link>
         <Link
           to="/messages"
-          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors"
+          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors cursor-pointer"
         >
           <MessageCircle className="h-4 w-4 mr-3" />
           Messages
@@ -207,7 +207,7 @@ const getNavigationItems = () => {
         <div className="border-t border-gray-100 mt-2 pt-2">
           <button
             onClick={handleLogout}
-            className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+            className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
           >
             <LogOut className="h-4 w-4 mr-3" />
             Sign Out
@@ -218,6 +218,7 @@ const getNavigationItems = () => {
   );
 
   return (
+    <>
     <nav
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         isScrolled
@@ -226,10 +227,10 @@ const getNavigationItems = () => {
       }`}
     >
       <div className="mr-2 px-4">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <div className="flex">
-            <Link to={getHomePath()} className="flex items-center group">
+            <Link to={getHomePath()} className="flex items-center group cursor-pointer">
               <Heart className="h-8 w-8 text-purple-600" />
               <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                 PetCare
@@ -250,7 +251,7 @@ const getNavigationItems = () => {
                       navigate(item.to); // Navigate directly if no dropdown
                     }
                   }}
-                  className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${
                     currentPage === item.key
                       ? "bg-purple-100 text-purple-700"
                       : "text-gray-700 hover:bg-gray-100 hover:text-purple-600"
@@ -280,7 +281,7 @@ const getNavigationItems = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleSearch(e)}
-                className="w-full pl-10 pr-4 py-2 bg-gray-50 border-0 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-gray-50 border-0 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all"
               />
             </div>
           </div>
@@ -290,14 +291,14 @@ const getNavigationItems = () => {
             {isAuthenticated ? (
               <>
                 {/* Quick Actions */}
-                <button className="hidden md:flex items-center px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-sm font-medium hover:scale-105 transform transition-all">
+                <button className="hidden md:flex items-center px-4 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-sm font-medium hover:scale-105 transform transition-all cursor-pointer">
                   <PlusCircle className="h-4 w-4 mr-1" />
                   Post Pet
                 </button>
 
                 {/* Notifications */}
                 <div className="relative">
-                  <button className="p-2 text-gray-600 hover:text-purple-600 hover:bg-gray-100 rounded-full transition-colors">
+                  <button className="p-2 text-gray-600 hover:text-purple-600 hover:bg-gray-100 rounded-full transition-colors cursor-pointer">
                     <Bell className="h-5 w-5" />
                     {notificationCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -309,7 +310,7 @@ const getNavigationItems = () => {
 
                 {/* Shopping Cart */}
                 <div className="relative">
-                  <button className="p-2 text-gray-600 hover:text-purple-600 hover:bg-gray-100 rounded-full transition-colors">
+                  <button onClick={() => navigate('/shop/cart')} className="p-2 text-gray-600 hover:text-purple-600 hover:bg-gray-100 rounded-full transition-colors cursor-pointer">
                     <ShoppingCart className="h-5 w-5" />
                     {cartCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-purple-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -326,7 +327,7 @@ const getNavigationItems = () => {
                       e.stopPropagation();
                       setIsUserMenuOpen(!isUserMenuOpen);
                     }}
-                    className="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                    className="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
                   >
                     <img
                       src={userAvatar}
@@ -342,13 +343,13 @@ const getNavigationItems = () => {
               <div className="flex items-center space-x-3">
                 <Link
                   to="/signin"
-                  className="text-gray-700 hover:text-purple-600 font-medium transition-colors"
+                  className="text-gray-700 hover:text-purple-600 font-medium transition-colors cursor-pointer"
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/signup"
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-full font-medium hover:scale-105 transform transition-all shadow-lg"
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-medium hover:scale-105 transform transition-all shadow-lg cursor-pointer"
                 >
                   Get Started
                 </Link>
@@ -358,7 +359,7 @@ const getNavigationItems = () => {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 text-gray-600 hover:text-purple-600 hover:bg-gray-100 rounded-lg transition-colors"
+              className="lg:hidden p-2 text-gray-600 hover:text-purple-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
             >
               {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -394,7 +395,7 @@ const getNavigationItems = () => {
               <div key={item.key}>
                 <Link
                   to={item.to}
-                  className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                     currentPage === item.key
                       ? "bg-purple-100 text-purple-700"
                       : "text-gray-700 hover:bg-gray-100"
@@ -410,7 +411,7 @@ const getNavigationItems = () => {
                       <Link
                         key={subIndex}
                         to={subItem.to}
-                        className="block px-3 py-1 text-sm text-gray-600 hover:text-purple-600 hover:bg-gray-50 rounded"
+                        className="block px-3 py-1 text-sm text-gray-600 hover:text-purple-600 hover:bg-gray-50 rounded cursor-pointer"
                       >
                         {subItem.name}
                       </Link>
@@ -434,21 +435,21 @@ const getNavigationItems = () => {
               <div className="space-y-1">
                 <Link
                   to="/profile"
-                  className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg"
+                  className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer"
                 >
                   <User className="h-4 w-4 mr-3" />
                   My Profile
                 </Link>
                 <Link
                   to="/settings"
-                  className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg"
+                  className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer"
                 >
                   <Settings className="h-4 w-4 mr-3" />
                   Settings
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg"
+                  className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg cursor-pointer"
                 >
                   <LogOut className="h-4 w-4 mr-3" />
                   Sign Out
@@ -459,6 +460,9 @@ const getNavigationItems = () => {
         </div>
       </div>
     </nav>
+  {/* Spacer to offset fixed navbar height */}
+  <div aria-hidden="true" className="h-20" />
+  </>
   );
 };
 

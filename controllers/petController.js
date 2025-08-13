@@ -4,6 +4,64 @@ const path = require('path');
 const Pet = require('../models/Pet');
 const User = require('../models/User');
 
+// Helper function to handle profile photo upload
+const handleProfilePhotoUpload = async (petId, reqFiles) => {
+    let profilePhotoUrl = null;
+
+    if (!reqFiles || !reqFiles.profilePhoto || reqFiles.profilePhoto.length === 0) {
+        return profilePhotoUrl;
+    }
+
+    const profileFile = reqFiles.profilePhoto[0];
+    const now = new Date();
+    const creationDate = `${String(now.getDate()).padStart(2, '0')}${String(now.getMonth() + 1).padStart(2, '0')}${now.getFullYear()}`;
+    const serial = String(Date.now()).slice(-5);
+    const newFileName = `${petId}_profile_${creationDate}_${serial}${path.extname(profileFile.originalname)}`;
+    const oldPath = profileFile.path;
+    const newPath = path.join(__dirname, '../uploads/photos', petId, newFileName); // Ensure petId is included in path
+
+    // Create pet-specific directory if it doesn't exist
+    const petPhotoDir = path.dirname(newPath);
+    if (!fs.existsSync(petPhotoDir)) {
+        await fs.promises.mkdir(petPhotoDir, { recursive: true });
+    }
+
+    await fs.promises.rename(oldPath, newPath);
+    profilePhotoUrl = `/uploads/photos/${petId}/${newFileName}`; // Correct path
+
+    return profilePhotoUrl;
+};
+
+// Helper function to handle other photos upload
+const handleOtherPhotosUpload = async (petId, reqFiles) => {
+    const photoUrls = [];
+
+    if (!reqFiles || !reqFiles.photos || reqFiles.photos.length === 0) {
+        return photoUrls;
+    }
+
+    const petPhotoDir = path.join(__dirname, '../uploads/photos', petId); // Directory for all photos
+
+    // Create pet-specific directory if it doesn't exist
+    if (!fs.existsSync(petPhotoDir)) {
+        await fs.promises.mkdir(petPhotoDir, { recursive: true });
+    }
+
+    for (const file of reqFiles.photos) {
+        const now = new Date();
+        const creationDate = `${String(now.getDate()).padStart(2, '0')}${String(now.getMonth() + 1).padStart(2, '0')}${now.getFullYear()}`;
+        const serial = String(Date.now()).slice(-5);
+        const newFileName = `${petId}_${creationDate}_${serial}${path.extname(file.originalname)}`;
+        const oldPath = file.path;
+        const newPath = path.join(petPhotoDir, newFileName);
+
+        await fs.promises.rename(oldPath, newPath);
+        photoUrls.push(`/uploads/photos/${petId}/${newFileName}`); // Correct path
+    }
+
+    return photoUrls;
+};
+
 // Create Pet Profile
 const createPetProfile = async (req, res) => {
     const { name, species, dateOfBirth, breed, color, description, status } = req.body;
@@ -53,46 +111,14 @@ const createPetProfile = async (req, res) => {
         const savedPet = await pet.save();
         const petId = savedPet._id.toString();
 
-        // Process uploaded files if any
-        const photoUrls = [];
-        
-        if (req.files) {
-            const fs = require('fs');
-            const path = require('path');
-            
-            // Create pet-specific directory
-            const petPhotoDir = path.join(__dirname, '../uploads/photos', petId);
-            if (!fs.existsSync(petPhotoDir)) {
-                await fs.promises.mkdir(petPhotoDir, { recursive: true });
-            }
+        // Process uploaded files using separate helper functions
+        const profilePhotoUrl = await handleProfilePhotoUpload(petId, req.files);
+        const photoUrls = await handleOtherPhotosUpload(petId, req.files);
 
-            // Process all uploaded files
-            const allFiles = [];
-            if (req.files.profilePhoto) allFiles.push(...req.files.profilePhoto);
-            if (req.files.photos) allFiles.push(...req.files.photos);
-
-            for (const file of allFiles) {
-                // Generate new filename with pet ID
-                const now = new Date();
-                const creationDate = `${String(now.getDate()).padStart(2, '0')}${String(now.getMonth() + 1).padStart(2, '0')}${now.getFullYear()}`;
-                const serial = String(Date.now()).slice(-5);
-                const newFileName = `${petId}_${creationDate}_${serial}${path.extname(file.originalname)}`;
-                
-                // Move file from temp to pet directory
-                const oldPath = file.path;
-                const newPath = path.join(petPhotoDir, newFileName);
-                
-                await fs.promises.rename(oldPath, newPath);
-                
-                // Store the photo path in database format
-                const photoUrl = `/uploads/photos/${newFileName}`;
-                photoUrls.push(photoUrl);
-            }
-
-            // Update pet with photo URLs
-            savedPet.photos = photoUrls;
-            await savedPet.save();
-        }
+        // Update pet with photo URLs
+        savedPet.profilePhoto = profilePhotoUrl;
+        savedPet.photos = photoUrls;
+        await savedPet.save();
 
         // Add the pet to the owner's profile
         const user = await User.findById(ownerId);
@@ -138,7 +164,7 @@ const updatePetProfile = async (req, res) => {
     try {
         // Find the pet by ID
         const pet = await Pet.findById(id);
-        if (!pet) {
+        if    (!pet) {
             return res.status(404).json({ message: "Pet not found" });
         }
 

@@ -8,18 +8,20 @@ const postAdoptionRequest = async (req, res) => {
     const user = await User.findById(req.user._id);
     
     try {
-        if (!user.phoneVerified) return res.status(403).json({ message: "Please Verify your Phone First" });
-        
         const pet = await Pet.findById(petId);
         if (!pet || pet.ownerId.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: "You can only post adoption requests for your own pets" });
         }
+        if (await AdoptionRequest.exists({ PetID: petId })) {
+            return res.status(403).json({ message: "Pet is already posted for adoption" });
+        }
 
-        const adoption = new PetAdoption({ 
-            PetID: petId, 
-            AdoptionDescription: adoptionDescription, 
-            adoptionType, 
-            ReturnDate: adoptionType === 'temporary' ? returnDate : null});
+        const adoption = new PetAdoption({
+            PetID: petId,
+            AdoptionDescription: adoptionDescription,
+            adoptionType,
+            ReturnDate: adoptionType === 'temporary' ? returnDate : null
+        });
 
         await adoption.save();
 

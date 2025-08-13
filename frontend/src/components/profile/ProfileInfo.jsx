@@ -20,7 +20,7 @@ const ProfileInfo = ({ userProfile, setUserProfile, editingProfile, setEditingPr
       <div className="text-center">
         <div className="relative inline-block mb-4">
           <img
-            src={userProfile.profileImage}
+            src={userProfile.profileImage || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23666' font-family='Arial' font-size='16'%3ENo Image%3C/text%3E%3C/svg%3E"}
             alt="Profile"
             className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
           />

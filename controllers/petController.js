@@ -6,7 +6,7 @@ const User = require('../models/User');
 
 // Create Pet Profile
 const createPetProfile = async (req, res) => {
-    const { name, species, dateOfBirth, breed, color, description, traits, photos, healthRecords } = req.body;
+    const { name, species, dateOfBirth, breed, color, description, status } = req.body;
     const ownerId = req.user._id;
 
     try {
@@ -14,7 +14,27 @@ const createPetProfile = async (req, res) => {
             return res.status(400).json({ message: "Missing required fields" });
         }
 
-        // Create a new pet profile
+        // Parse traits and healthRecords from JSON strings (if they exist)
+        let traits = [];
+        let healthRecords = [];
+        
+        if (req.body.traits) {
+            try {
+                traits = JSON.parse(req.body.traits);
+            } catch (e) {
+                traits = Array.isArray(req.body.traits) ? req.body.traits : [req.body.traits];
+            }
+        }
+        
+        if (req.body.healthRecords) {
+            try {
+                healthRecords = JSON.parse(req.body.healthRecords);
+            } catch (e) {
+                healthRecords = Array.isArray(req.body.healthRecords) ? req.body.healthRecords : [req.body.healthRecords];
+            }
+        }
+
+        // Create a new pet profile first (without photos)
         const pet = new Pet({
             name,
             ownerId,
@@ -22,26 +42,90 @@ const createPetProfile = async (req, res) => {
             dateOfBirth,
             breed,
             color,
-            description,
-            traits: traits || [],
-            photos: photos || [],
-            healthRecords: healthRecords || [],
+            description: description || '',
+            status: status || 'Adopted',
+            traits,
+            healthRecords,
+            photos: [], // Will be populated after file processing
         });
 
-        // Save to database
-        await pet.save();
+        // Save to database to get the pet ID
+        const savedPet = await pet.save();
+        const petId = savedPet._id.toString();
+
+        // Process uploaded files if any
+        const photoUrls = [];
+        
+        if (req.files) {
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Create pet-specific directory
+            const petPhotoDir = path.join(__dirname, '../uploads/photos', petId);
+            if (!fs.existsSync(petPhotoDir)) {
+                await fs.promises.mkdir(petPhotoDir, { recursive: true });
+            }
+
+            // Process all uploaded files
+            const allFiles = [];
+            if (req.files.profilePhoto) allFiles.push(...req.files.profilePhoto);
+            if (req.files.photos) allFiles.push(...req.files.photos);
+
+            for (const file of allFiles) {
+                // Generate new filename with pet ID
+                const now = new Date();
+                const creationDate = `${String(now.getDate()).padStart(2, '0')}${String(now.getMonth() + 1).padStart(2, '0')}${now.getFullYear()}`;
+                const serial = String(Date.now()).slice(-5);
+                const newFileName = `${petId}_${creationDate}_${serial}${path.extname(file.originalname)}`;
+                
+                // Move file from temp to pet directory
+                const oldPath = file.path;
+                const newPath = path.join(petPhotoDir, newFileName);
+                
+                await fs.promises.rename(oldPath, newPath);
+                
+                // Store the photo path in database format
+                const photoUrl = `/uploads/photos/${newFileName}`;
+                photoUrls.push(photoUrl);
+            }
+
+            // Update pet with photo URLs
+            savedPet.photos = photoUrls;
+            await savedPet.save();
+        }
 
         // Add the pet to the owner's profile
         const user = await User.findById(ownerId);
-        user.petsOwned.push(pet._id);
+        if (user.petsOwned) {
+            user.petsOwned.push(savedPet._id);
+        } else {
+            user.petsOwned = [savedPet._id];
+        }
         await user.save();
 
         return res.status(201).json({
             message: "Pet profile created successfully",
-            pet: pet,
+            pet: savedPet,
         });
     } catch (error) {
         console.error("Error creating pet profile:", error);
+        
+        // Clean up any uploaded files on error
+        if (req.files) {
+            const fs = require('fs');
+            const allFiles = [];
+            if (req.files.profilePhoto) allFiles.push(...req.files.profilePhoto);
+            if (req.files.photos) allFiles.push(...req.files.photos);
+            
+            for (const file of allFiles) {
+                try {
+                    await fs.promises.unlink(file.path);
+                } catch (unlinkError) {
+                    console.error("Error cleaning up file:", unlinkError);
+                }
+            }
+        }
+        
         return res.status(500).json({ message: "Error creating pet profile", error: error.message });
     }
 };
@@ -145,6 +229,7 @@ const addPetPhoto = async (req, res) => {
         }
 
         // Save the photo path in the database
+        // Store the full path to match the current database structure
         const photoPath = `/uploads/photos/${req.file.filename}`;
         pet.photos.push(photoPath);
         await pet.save();

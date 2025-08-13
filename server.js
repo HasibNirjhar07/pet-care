@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const app = express();
 const cors = require('cors');
 const mongoose = require("mongoose");
@@ -30,6 +31,11 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/profile", profileRoutes);
 app.use("/pet", petRoutes);

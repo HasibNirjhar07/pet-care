@@ -2,10 +2,14 @@ const express = require('express');
 const { getAllPetsByUser, createPetProfile, updatePetProfile, deletePetProfile, getPetProfile, addPetPhoto, removePetPhoto , getPetPhotos } = require('../controllers/petController');
 const { jwtVerification } = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/uploadHandler');
+const uploadCreate = require('../middlewares/uploadCreateHandler');
 const router = express.Router();
 
-// Create a pet profile
-router.post('/create', jwtVerification, createPetProfile);
+// Create a pet profile with optional photo uploads
+router.post('/create', jwtVerification, uploadCreate.fields([
+    { name: 'profilePhoto', maxCount: 1 },
+    { name: 'photos', maxCount: 10 }
+]), createPetProfile);
 
 // Get a pet profile
 router.get('/profile/:id', jwtVerification, getPetProfile);

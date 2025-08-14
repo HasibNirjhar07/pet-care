@@ -44,11 +44,14 @@ const AppContent = ({ user, setUser, handleLogout }) => {
 
   useEffect(() => {
     const loadCart = async () => {
-      if (!user) { setCartCount(0); return; }
+      if (!user) {
+        setCartCount(0);
+        return;
+      }
       try {
         const c = await shopApi.getCart();
         setCartCount(c?.items?.reduce((s, i) => s + i.quantity, 0) || 0);
-  } catch {
+      } catch {
         setCartCount(0);
       }
     };
@@ -58,12 +61,15 @@ const AppContent = ({ user, setUser, handleLogout }) => {
   useEffect(() => {
     const onCartUpdated = () => {
       if (!user) return;
-      shopApi.getCart().then(c => {
-        setCartCount(c?.items?.reduce((s, i) => s + i.quantity, 0) || 0);
-      }).catch(() => {});
+      shopApi
+        .getCart()
+        .then((c) => {
+          setCartCount(c?.items?.reduce((s, i) => s + i.quantity, 0) || 0);
+        })
+        .catch(() => {});
     };
-    window.addEventListener('cart:updated', onCartUpdated);
-    return () => window.removeEventListener('cart:updated', onCartUpdated);
+    window.addEventListener("cart:updated", onCartUpdated);
+    return () => window.removeEventListener("cart:updated", onCartUpdated);
   }, [user]);
 
   const getNavbarProps = () => {
@@ -75,7 +81,7 @@ const AppContent = ({ user, setUser, handleLogout }) => {
           user.photoURL ||
           "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
         userRole: user.role || "user",
-  cartCount,
+        cartCount,
         notificationCount: 5,
         onLogout: handleLogout,
         currentPage: getCurrentPage(location.pathname),
@@ -101,7 +107,7 @@ const AppContent = ({ user, setUser, handleLogout }) => {
 
   return (
     <>
-  <Navbar {...getNavbarProps()} />
+      <Navbar {...getNavbarProps()} />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/signin" element={<SignInPage onSignIn={setUser} />} />
@@ -127,9 +133,10 @@ const AppContent = ({ user, setUser, handleLogout }) => {
         <Route
           path="/care"
           element={
-            <ProtectedRoute user={user}>
-              <CarePage />
-            </ProtectedRoute>
+            // <ProtectedRoute user={user}>
+            //   <CarePage />
+            // </ProtectedRoute>
+            <CarePage />
           }
         />
         <Route

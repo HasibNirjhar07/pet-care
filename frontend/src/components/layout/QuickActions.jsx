@@ -1,20 +1,67 @@
-import React from 'react';
-import { Calendar, MapPin, Heart, Users } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React, { useEffect, useState } from "react";
+import { Calendar, MapPin, Heart, Users } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 const QuickActions = () => {
-  const nearbyHomes = [
-    { name: "Happy Paws Sanctuary", distance: "2.3 km", rating: 4.8, slots: 3 },
-    { name: "Golden Hearts Pet Care", distance: "3.1 km", rating: 4.9, slots: 1 },
-    { name: "Furry Friends Haven", distance: "4.7 km", rating: 4.7, slots: 5 },
-  ];
+  const [nearbyHomes, setNearbyHomes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const upcomingEvents = [
     { title: "Pet Adoption Fair", date: "Dec 15", location: "Central Park" },
     { title: "Vet Health Checkup", date: "Dec 18", location: "PetCare Clinic" },
-    { title: "Training Workshop", date: "Dec 22", location: "Community Center" },
+    {
+      title: "Training Workshop",
+      date: "Dec 22",
+      location: "Community Center",
+    },
   ];
+
+  useEffect(() => {
+    // Request user's location and fetch data from backend
+    if (navigator.geolocation) {
+      setLoading(true);
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+
+          try {
+            const res = await fetch(
+              `http://localhost:3000/api/care/services/nearby?lat=${lat}&lng=${lng}&radius=5000`
+            );
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || "Failed to fetch");
+
+            // Map backend data into the format UI expects
+            const mapped = data.services.map((s) => ({
+              name: s.name,
+              distance: s.distance
+                ? `${(s.distance / 1000).toFixed(1)} km`
+                : "Nearby",
+              rating: s.rating || 4.5, // You can replace with actual rating field if you store it
+              slots: s.slots || Math.floor(Math.random() * 5) + 1, // Random until real data available
+            }));
+
+            setNearbyHomes(mapped);
+          } catch (err) {
+            setError(err.message);
+          } finally {
+            setLoading(false);
+          }
+        },
+        (err) => {
+          setError("Location access denied.");
+          setLoading(false);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    } else {
+      setError("Geolocation not supported in this browser.");
+    }
+  }, []);
 
   return (
     <div className="flex flex-col gap-6">
@@ -25,12 +72,19 @@ const QuickActions = () => {
           <h2 className="text-base font-semibold">Nearby Adoption Homes</h2>
         </div>
         <CardContent className="space-y-3">
+          {loading && (
+            <p className="text-sm text-gray-500">Fetching nearby homes…</p>
+          )}
+          {error && <p className="text-sm text-red-500">{error}</p>}
+          {!loading && !error && nearbyHomes.length === 0 && (
+            <p className="text-sm text-gray-500">No homes found nearby.</p>
+          )}
           {nearbyHomes.map((home, index) => (
             <div
               key={index}
               className="rounded-lg p-3 space-y-2"
               style={{
-                background: 'linear-gradient(to right, #f5f3ff, #ffe4e6)',
+                background: "linear-gradient(to right, #f5f3ff, #ffe4e6)",
               }}
             >
               <div className="flex justify-between items-start">
@@ -65,7 +119,7 @@ const QuickActions = () => {
               key={index}
               className="rounded-lg p-3"
               style={{
-                background: 'linear-gradient(to right, #eff6ff, #f3e8ff)',
+                background: "linear-gradient(to right, #eff6ff, #f3e8ff)",
               }}
             >
               <p className="font-medium text-sm mb-0.5">{event.title}</p>
@@ -81,7 +135,7 @@ const QuickActions = () => {
       <Card
         className="shadow-md"
         style={{
-          background: 'linear-gradient(to bottom right, #ede9fe, #fce7f3)',
+          background: "linear-gradient(to bottom right, #ede9fe, #fce7f3)",
         }}
       >
         <CardContent className="flex flex-col items-center gap-3 text-center">
@@ -93,7 +147,7 @@ const QuickActions = () => {
           <Button
             className="w-full text-white"
             style={{
-              background: 'linear-gradient(to right, #9333ea, #ec4899)',
+              background: "linear-gradient(to right, #9333ea, #ec4899)",
             }}
           >
             <Users size={16} className="mr-2" />

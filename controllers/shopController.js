@@ -291,3 +291,12 @@ exports.setImageForAllProducts = async (req, res) => {
     res.status(500).json({ error: 'Failed to update images for all products' });
   }
 };
+
+exports.getPurchaseHistory = async (req, res) => {
+  try {
+    const orders = await Order.find({ user: req.user._id }).populate('items.product');
+    res.json(orders);
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to retrieve purchase history' });
+  }
+};

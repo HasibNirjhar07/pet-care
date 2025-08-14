@@ -191,6 +191,13 @@ const getNavigationItems = () => {
           My Profile
         </Link>
         <Link
+          to="/purchase-history"
+          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors cursor-pointer"
+        >
+          <ShoppingCart className="h-4 w-4 mr-3" />
+          Purchase History
+        </Link>
+        <Link
           to="/settings"
           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors cursor-pointer"
         >

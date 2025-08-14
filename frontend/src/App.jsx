@@ -25,6 +25,7 @@ import Homes from "./pages/Adopt/homes.jsx";
 import Post from "./pages/Adopt/post";
 import Requests from "./pages/Adopt/requests.jsx";
 import { shopApi } from "./lib/api";
+import PurchaseHistory from "./pages/PurchaseHistory";
 // Placeholder components (replace with actual components when available)
 // const AdoptPage = () => <div>Adopt Page (Placeholder)</div>;
 const VetPortal = () => <div>Vet Portal Page (Placeholder)</div>;
@@ -129,6 +130,16 @@ const AppContent = ({ user, setUser, handleLogout }) => {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/purchase-history"
+          element={
+            <ProtectedRoute user={user}>
+              <PurchaseHistory />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Routes for navigation items */}
         <Route
           path="/care"

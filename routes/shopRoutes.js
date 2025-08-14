@@ -22,4 +22,7 @@ router.post('/payment/fail', jwtVerification, ctrl.paymentFail);
 // Admin/dev helpers
 router.post('/products/image-all', jwtVerification, ctrl.setImageForAllProducts);
 
+//Get Purchase History
+router.get('/purchase-history', jwtVerification, ctrl.getPurchaseHistory);
+
 module.exports = router;

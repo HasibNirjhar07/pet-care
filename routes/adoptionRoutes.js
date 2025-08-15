@@ -2,7 +2,16 @@
 const express = require("express");
 const router = express.Router();
 const { jwtVerification } = require('../middlewares/authMiddleware');
-const { postAdoptionRequest, getAvailablePets, commentOnAdoption, requestAdoption, viewAdoptionRequests, getCommentsForAdoption, scheduleMeeting ,updateAdoptionStatus } = require("../controllers/adoptionController");
+const { postAdoptionRequest, getAvailablePets, commentOnAdoption, requestAdoption, viewAdoptionRequests, getCommentsForAdoption, scheduleMeeting ,updateAdoptionStatus, getMyAdoptionPosts, deleteAdoptionPost, updateAdoptionPost, likeAdoptionPost } = require("../controllers/adoptionController");
+
+// Get all adoption posts
+router.get("/myPosts", jwtVerification, getMyAdoptionPosts);
+
+// Delete an adoption post
+router.delete("/:adoptionId", jwtVerification, deleteAdoptionPost);
+
+// Update an adoption post
+router.put("/:adoptionId", jwtVerification, updateAdoptionPost);
 
 // Post an adoption request
 router.post("/post", jwtVerification, postAdoptionRequest);
@@ -27,5 +36,8 @@ router.post("/schedule-meeting/:requestId", jwtVerification, scheduleMeeting);
 
 // Update Adoption Status
 router.post("/:adoptionId/status-confirmed", jwtVerification, updateAdoptionStatus);
+
+// Like an adoption post
+router.post("/:adoptionId/like", jwtVerification, likeAdoptionPost);
 
 module.exports = router;

@@ -5,6 +5,7 @@ import SignUpPage from "./pages/Auth/SignUp";
 import Dashboard from "./pages/Dashboard/Home";
 import Navbar from "./components/layout/Navbar";
 import Profile from "./pages/Profile";
+import PetProfile from "./pages/Pet/PetProfile";
 import {
   BrowserRouter as Router,
   Routes,
@@ -130,7 +131,14 @@ const AppContent = ({ user, setUser, handleLogout }) => {
             </ProtectedRoute>
           }
         />
-
+        <Route
+          path="/pet/:id"
+          element={
+            <ProtectedRoute user={user}>
+              <PetProfile />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/purchase-history"
           element={
@@ -139,7 +147,6 @@ const AppContent = ({ user, setUser, handleLogout }) => {
             </ProtectedRoute>
           }
         />
-
         {/* Routes for navigation items */}
         <Route
           path="/care"

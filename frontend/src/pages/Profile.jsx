@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileTabs from "@/components/profile/ProfileTabs";
 import ProfileInfo from "@/components/profile/ProfileInfo";
@@ -6,6 +7,7 @@ import PetCard from "@/components/profile/PetCard";
 import AddPetModal from "@/components/profile/AddPetModal";
 import EditPetModal from "@/components/profile/EditPetModal";
 const Profile = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("profile");
   const [editingProfile, setEditingProfile] = useState(false);
   const [selectedPet, setSelectedPet] = useState(null);
@@ -58,18 +60,18 @@ const Profile = () => {
         console.log("No token found, user not logged in");
         return;
       }
-      
-      const response = await fetch('http://localhost:3000/pet/myPets', {
-        method: 'GET',
+
+      const response = await fetch("http://localhost:3000/pet/myPets", {
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
       });
 
       if (response.ok) {
         const result = await response.json();
-        console.log('Pets data received:', result);
+        console.log("Pets data received:", result);
         setPets(result.pets || []);
       } else if (response.status === 404) {
         // No pets found
@@ -106,14 +108,20 @@ const Profile = () => {
   };
 
   const handleAddPet = async () => {
-    console.log('Current newPet state:', newPet); // Debug log
-    
-    if (newPet.name && newPet.breed && newPet.species && newPet.dateOfBirth && newPet.color) {
+    console.log("Current newPet state:", newPet); // Debug log
+
+    if (
+      newPet.name &&
+      newPet.breed &&
+      newPet.species &&
+      newPet.dateOfBirth &&
+      newPet.color
+    ) {
       try {
         // Get the JWT token from localStorage
-        const token = localStorage.getItem('token');
-        console.log('Token exists:', !!token); // Debug log
-        
+        const token = localStorage.getItem("token");
+        console.log("Token exists:", !!token); // Debug log
+
         if (!token) {
           alert("Please log in to add a pet");
           return;
@@ -121,41 +129,44 @@ const Profile = () => {
 
         // Create FormData for the request
         const formData = new FormData();
-        
+
         // Add text fields
-        formData.append('name', newPet.name);
-        formData.append('species', newPet.species);
-        formData.append('breed', newPet.breed);
-        formData.append('dateOfBirth', newPet.dateOfBirth);
-        formData.append('color', newPet.color);
-        formData.append('description', newPet.description || '');
-        formData.append('status', newPet.status || 'Adopted');
-        
+        formData.append("name", newPet.name);
+        formData.append("species", newPet.species);
+        formData.append("breed", newPet.breed);
+        formData.append("dateOfBirth", newPet.dateOfBirth);
+        formData.append("color", newPet.color);
+        formData.append("description", newPet.description || "");
+        formData.append("status", newPet.status || "Adopted");
+
         // Add traits and health records as JSON strings
         if (newPet.traits && newPet.traits.length > 0) {
-          formData.append('traits', JSON.stringify(newPet.traits));
+          formData.append("traits", JSON.stringify(newPet.traits));
         }
         if (newPet.healthRecords && newPet.healthRecords.length > 0) {
-          formData.append('healthRecords', JSON.stringify(newPet.healthRecords));
+          formData.append(
+            "healthRecords",
+            JSON.stringify(newPet.healthRecords)
+          );
         }
-        
+
         // Add files
         if (newPet.profilePhoto) {
-          formData.append('profilePhoto', newPet.profilePhoto);
+          formData.append("profilePhoto", newPet.profilePhoto);
         }
         if (newPet.photos && newPet.photos.length > 0) {
           newPet.photos.forEach((photo) => {
-            formData.append('photos', photo);
+            formData.append("photos", photo);
           });
         }
 
-        console.log('Sending FormData to backend...');
+        console.log("Sending FormData to backend...");
 
         // Call the backend directly
-        const response = await fetch('http://localhost:3000/pet/create', {
-          method: 'POST',
+        const response = await fetch("http://localhost:3000/pet/create", {
+          method: "POST",
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             // Don't set Content-Type for FormData, let browser set it with boundary
           },
           body: formData,
@@ -163,15 +174,17 @@ const Profile = () => {
 
         if (!response.ok) {
           const errorText = await response.text();
-          throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+          throw new Error(
+            `HTTP error! status: ${response.status}, message: ${errorText}`
+          );
         }
 
         const result = await response.json();
-        console.log('Pet created successfully:', result);
-        
+        console.log("Pet created successfully:", result);
+
         // Refresh the pets list
         await fetchPets();
-        
+
         // Reset the form
         setNewPet({
           name: "",
@@ -186,26 +199,29 @@ const Profile = () => {
           healthRecords: [],
           traits: [],
         });
-        
+
         setShowAddPet(false);
         alert("Pet added successfully!");
-        
       } catch (error) {
         console.error("Error adding pet:", error);
-        
+
         // Provide more specific error messages
-        if (error.message.includes('Failed to fetch')) {
-          alert("Failed to connect to server. Please make sure your backend is running on port 3000.");
-        } else if (error.message.includes('401')) {
+        if (error.message.includes("Failed to fetch")) {
+          alert(
+            "Failed to connect to server. Please make sure your backend is running on port 3000."
+          );
+        } else if (error.message.includes("401")) {
           alert("Authentication failed. Please log in again.");
-        } else if (error.message.includes('400')) {
+        } else if (error.message.includes("400")) {
           alert("Invalid data provided. Please check all required fields.");
         } else {
           alert(`Failed to add pet: ${error.message}`);
         }
       }
     } else {
-      alert("Please fill in all required fields (Name, Species, Breed, Date of Birth, Color)");
+      alert(
+        "Please fill in all required fields (Name, Species, Breed, Date of Birth, Color)"
+      );
     }
   };
 
@@ -233,12 +249,18 @@ const Profile = () => {
 
   const addHealthRecord = (record) => {
     if (!newPet.healthRecords.includes(record)) {
-      setNewPet({ ...newPet, healthRecords: [...newPet.healthRecords, record] });
+      setNewPet({
+        ...newPet,
+        healthRecords: [...newPet.healthRecords, record],
+      });
     }
   };
 
   const removeHealthRecord = (record) => {
-    setNewPet({ ...newPet, healthRecords: newPet.healthRecords.filter((r) => r !== record) });
+    setNewPet({
+      ...newPet,
+      healthRecords: newPet.healthRecords.filter((r) => r !== record),
+    });
   };
 
   return (
@@ -292,6 +314,7 @@ const Profile = () => {
                     key={pet._id || pet.id}
                     pet={pet}
                     setSelectedPet={setSelectedPet}
+                    onCardClick={() => navigate(`/pet/${pet._id}`)}
                   />
                 ))
               ) : (

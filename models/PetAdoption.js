@@ -13,6 +13,7 @@ const petAdoptionSchema = new mongoose.Schema({
     adoptionType: { type: String, required: true }, // ["permanent", "temporary"]
     ReturnDate: { type: Date },
     comments: [commentSchema], // Embedding comments inside PetAdoption
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 });

@@ -1,84 +1,67 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "../../components/layout/Sidebar";
 import NewsfeedPost from "../../components/NewsFeedPost";
 import CreatePost from "../../components/CreatePost";
 import QuickActions from "../../components/layout/QuickActions";
 
-const Dashboard = ({user , onLogout}) => {
+const Dashboard = ({ user, onLogout }) => {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      user: {
-        name: "Sarah Johnson",
-        avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
-        location: "San Francisco, CA"
-      },
-      pet: {
-        name: "Luna",
-        type: "Cat",
-        breed: "Persian",
-        age: "2 years",
-        image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=600&h=400&fit=crop",
-        adoptionType: "Permanent",
-        medicalHistory: "Vaccinated, spayed, microchipped",
-        personality: "Gentle, loves cuddles, good with children"
-      },
-      timestamp: "2 hours ago",
-      likes: 24,
-      comments: 8,
-      status: "Available"
-    },
-    {
-      id: 2,
-      user: {
-        name: "Mike Rodriguez",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-        location: "Austin, TX"
-      },
-      pet: {
-        name: "Buddy",
-        type: "Dog",
-        breed: "Golden Retriever",
-        age: "3 years",
-        image: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=600&h=400&fit=crop",
-        adoptionType: "Temporary",
-        medicalHistory: "Fully vaccinated, neutered, healthy",
-        personality: "Energetic, loves fetch, great with kids and other dogs"
-      },
-      timestamp: "4 hours ago",
-      likes: 41,
-      comments: 15,
-      status: "Available"
-    },
-    {
-      id: 3,
-      user: {
-        name: "Emma Chen",
-        avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-        location: "Seattle, WA"
-      },
-      pet: {
-        name: "Whiskers",
-        type: "Cat",
-        breed: "Maine Coon",
-        age: "1 year",
-        image: "https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=600&h=400&fit=crop",
-        adoptionType: "Permanent",
-        medicalHistory: "Recently vaccinated, health certificate available",
-        personality: "Playful, curious, loves climbing and exploring"
-      },
-      timestamp: "6 hours ago",
-      likes: 37,
-      comments: 12,
-      status: "Pending"
-    }
-  ]);
+  useEffect(() => {
+    const fetchAvailablePets = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch("http://localhost:3000/adoption/pets", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!res.ok) throw new Error("Failed to fetch available pets");
+        const data = await res.json();
+        const formattedPosts = data.map((pet) => ({
+          id: pet._id,
+          adoptionId: pet.adoptionId,
+          user: {
+            name: pet.postedBy?.name,
+            avatar:
+              "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
+            location: "Unknown",
+          },
+          pet: {
+            name: pet.name,
+            type: pet.species,
+            breed: pet.breed,
+            age: `${
+              new Date().getFullYear() - new Date(pet.dateOfBirth).getFullYear()
+            } years`,
+            image: `http://localhost:3000${pet.photos[0]}`,
+            adoptionType: pet.adoptionType,
+            medicalHistory: pet.healthRecords.join(", "),
+            personality: pet.traits.join(", "),
+          },
+          timestamp: new Date(pet.createdAt).toLocaleString(),
+          likes: pet.likes,
+          comments: pet.comments,
+          status: pet.status,
+        }));
+        setPosts(formattedPosts);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAvailablePets();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-   
       <div className="container my-10 mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
           {/* Left Sidebar */}
@@ -88,12 +71,8 @@ const Dashboard = ({user , onLogout}) => {
 
           {/* Main Content - Newsfeed */}
           <div className="lg:col-span-2 space-y-6">
-            <CreatePost
-            
-            
-            
-            />
-            
+            <CreatePost />
+
             <div className="space-y-6">
               {posts.map((post) => (
                 <NewsfeedPost key={post.id} post={post} />

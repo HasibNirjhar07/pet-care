@@ -44,7 +44,7 @@ const getAvailablePets = async (req, res) => {
         // Fetch adoption details for each pet
         const petIds = pets.map(pet => pet._id);
         const adoptionDetails = await PetAdoption.find({ PetID: { $in: petIds } })
-            .select("AdoptionDescription adoptionType ReturnDate PetID")
+            .select("AdoptionDescription adoptionType ReturnDate PetID likes comments")
             .lean();
 
         // Merge adoption details with pet data and structure response correctly
@@ -64,9 +64,12 @@ const getAvailablePets = async (req, res) => {
                 healthRecords: pet.healthRecords,
                 traits: pet.traits,
                 createdAt: pet.createdAt,
+                adoptionId: adoptionInfo ? adoptionInfo._id : null,
                 adoptionDescription: adoptionInfo ? adoptionInfo.AdoptionDescription : null,
                 adoptionType: adoptionInfo ? adoptionInfo.adoptionType : null,
                 returnDate: adoptionInfo ? adoptionInfo.ReturnDate : null,
+                likes: (adoptionInfo && adoptionInfo.likes) ? adoptionInfo.likes.length : 0,
+                comments: (adoptionInfo && adoptionInfo.comments) ? adoptionInfo.comments.length : 0,
                 postedBy: pet.ownerId ? {
                     id: pet.ownerId._id,
                     name: pet.ownerId.name,
@@ -99,10 +102,11 @@ const commentOnAdoption = async (req, res) => {
         }
 
         // Add the new comment
-        adoption.comments.push({ userId, comment, parentId });
+        const newComment = { userId, comment, parentId };
+        adoption.comments.push(newComment);
         await adoption.save();
 
-        res.status(201).json({ message: "Comment added", comment, commentId: adoption.comments[adoption.comments.length - 1]._id });
+        res.status(201).json(adoption.comments[adoption.comments.length - 1]);
     } catch (error) {
         res.status(500).json({ message: "Error adding comment", error: error.message });
     }
@@ -239,4 +243,113 @@ const updateAdoptionStatus = async (req, res) => {
     }
 };
 
-module.exports = { postAdoptionRequest, getAvailablePets, commentOnAdoption, requestAdoption, viewAdoptionRequests, scheduleMeeting, getCommentsForAdoption, updateAdoptionStatus };
+const getMyAdoptionPosts = async (req, res) => {
+    try {
+        const userId = req.user._id;
+
+        // Find pets owned by the user
+        const userPets = await Pet.find({ ownerId: userId }).select('_id').lean();
+        const userPetIds = userPets.map(pet => pet._id);
+
+        // Find adoption posts for those pets
+        const myAdoptionPosts = await PetAdoption.find({ PetID: { $in: userPetIds } })
+            .populate({
+                path: 'PetID',
+                model: 'Pet'
+            })
+            .sort({ createdAt: -1 });
+
+        res.json(myAdoptionPosts);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching my adoption posts", error: error.message });
+    }
+};
+
+const deleteAdoptionPost = async (req, res) => {
+    try {
+        const { adoptionId } = req.params;
+        const userId = req.user._id;
+
+        const adoption = await PetAdoption.findById(adoptionId);
+        if (!adoption) {
+            return res.status(404).json({ message: "Adoption post not found" });
+        }
+
+        const pet = await Pet.findById(adoption.PetID);
+        if (!pet) {
+            return res.status(404).json({ message: "Pet not found" });
+        }
+
+        if (pet.ownerId.toString() !== userId.toString()) {
+            return res.status(403).json({ message: "You are not authorized to delete this post" });
+        }
+
+        await PetAdoption.findByIdAndDelete(adoptionId);
+
+        pet.status = "Adopted";
+        await pet.save();
+
+        res.json({ message: "Adoption post deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Error deleting adoption post", error: error.message });
+    }
+};
+
+const updateAdoptionPost = async (req, res) => {
+    try {
+        const { adoptionId } = req.params;
+        const { adoptionDescription, adoptionType, returnDate } = req.body;
+        const userId = req.user._id;
+
+        const adoption = await PetAdoption.findById(adoptionId);
+        if (!adoption) {
+            return res.status(404).json({ message: "Adoption post not found" });
+        }
+
+        const pet = await Pet.findById(adoption.PetID);
+        if (!pet) {
+            return res.status(404).json({ message: "Pet not found" });
+        }
+
+        if (pet.ownerId.toString() !== userId.toString()) {
+            return res.status(403).json({ message: "You are not authorized to update this post" });
+        }
+
+        adoption.AdoptionDescription = adoptionDescription || adoption.AdoptionDescription;
+        adoption.adoptionType = adoptionType || adoption.adoptionType;
+        adoption.ReturnDate = adoptionType === 'temporary' ? returnDate : null;
+        adoption.updatedAt = Date.now();
+
+        await adoption.save();
+
+        res.json({ message: "Adoption post updated successfully", adoption });
+    } catch (error) {
+        res.status(500).json({ message: "Error updating adoption post", error: error.message });
+    }
+};
+
+const likeAdoptionPost = async (req, res) => {
+    try {
+        const { adoptionId } = req.params;
+        const userId = req.user._id;
+
+        const adoption = await PetAdoption.findById(adoptionId);
+        if (!adoption) {
+            return res.status(404).json({ message: "Adoption post not found" });
+        }
+
+        const index = adoption.likes.indexOf(userId);
+        if (index === -1) {
+            adoption.likes.push(userId);
+        } else {
+            adoption.likes.splice(index, 1);
+        }
+
+        await adoption.save();
+        res.json({ message: "Adoption post like status updated", likes: adoption.likes });
+    } catch (error) {
+        res.status(500).json({ message: "Error liking adoption post", error: error.message });
+    }
+};
+
+module.exports = { postAdoptionRequest, getAvailablePets, commentOnAdoption, requestAdoption, viewAdoptionRequests, scheduleMeeting, getCommentsForAdoption, updateAdoptionStatus, getMyAdoptionPosts, deleteAdoptionPost, updateAdoptionPost, likeAdoptionPost };

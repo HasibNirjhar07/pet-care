@@ -2,7 +2,7 @@ import { Dog, Cat, Edit, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
-const PetCard = ({ pet, setSelectedPet }) => {
+const PetCard = ({ pet, setSelectedPet, onCardClick }) => {
   // Function to get the image URL
   const getImageUrl = () => {
     if (pet.profilePhoto) {
@@ -18,7 +18,10 @@ const PetCard = ({ pet, setSelectedPet }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 overflow-hidden">
+    <div
+      className="bg-white rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 overflow-hidden cursor-pointer"
+      onClick={onCardClick}
+    >
       <div className="relative">
         <img
           src={getImageUrl()}

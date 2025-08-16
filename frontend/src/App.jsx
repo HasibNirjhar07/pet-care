@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard/Home";
 import Navbar from "./components/layout/Navbar";
 import Profile from "./pages/Profile";
 import PetProfile from "./pages/Pet/PetProfile";
+import PetManagement from "./pages/PetManagement";
 import {
   BrowserRouter as Router,
   Routes,
@@ -102,6 +103,7 @@ const AppContent = ({ user, setUser, handleLogout }) => {
     if (pathname.startsWith("/adopt")) return "adopt";
     if (pathname.startsWith("/care")) return "care";
     if (pathname.startsWith("/shop")) return "shop";
+    if (pathname.startsWith("/pets")) return "pets";
     if (pathname.startsWith("/vet")) return "vet";
     if (pathname.startsWith("/admin")) return "admin";
     return "";
@@ -136,6 +138,14 @@ const AppContent = ({ user, setUser, handleLogout }) => {
           element={
             <ProtectedRoute user={user}>
               <PetProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pets"
+          element={
+            <ProtectedRoute user={user}>
+              <PetManagement />
             </ProtectedRoute>
           }
         />

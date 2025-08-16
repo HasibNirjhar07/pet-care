@@ -9,8 +9,8 @@ const {
     requestAdoption, 
     viewAdoptionRequests, 
     getCommentsForAdoption, 
-    getCommentCount,        // NEW
-    getLikeStatus,          // NEW
+    getCommentCount, 
+    getLikeStatus,          
     scheduleMeeting,
     updateAdoptionStatus, 
     getMyAdoptionPosts, 

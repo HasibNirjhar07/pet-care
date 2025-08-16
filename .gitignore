@@ -47,3 +47,5 @@ local.env
 *.sln
 
  
+.env
+.env

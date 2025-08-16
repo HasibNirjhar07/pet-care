@@ -2,7 +2,23 @@
 const express = require("express");
 const router = express.Router();
 const { jwtVerification } = require('../middlewares/authMiddleware');
-const { postAdoptionRequest, getAvailablePets, commentOnAdoption, requestAdoption, viewAdoptionRequests, getCommentsForAdoption, scheduleMeeting ,updateAdoptionStatus, getMyAdoptionPosts, deleteAdoptionPost, updateAdoptionPost, likeAdoptionPost, deleteAdoptionRequest } = require("../controllers/adoptionController");
+const { 
+    postAdoptionRequest, 
+    getAvailablePets, 
+    commentOnAdoption, 
+    requestAdoption, 
+    viewAdoptionRequests, 
+    getCommentsForAdoption, 
+    getCommentCount,        // NEW
+    getLikeStatus,          // NEW
+    scheduleMeeting,
+    updateAdoptionStatus, 
+    getMyAdoptionPosts, 
+    deleteAdoptionPost, 
+    updateAdoptionPost, 
+    likeAdoptionPost, 
+    deleteAdoptionRequest 
+} = require("../controllers/adoptionController");
 
 // Get all adoption posts
 router.get("/myPosts", jwtVerification, getMyAdoptionPosts);
@@ -24,6 +40,12 @@ router.post("/:adoptionId/comment", jwtVerification, commentOnAdoption);
 
 // Get all comments on an adoption request
 router.get("/:adoptionId/comments", jwtVerification, getCommentsForAdoption);
+
+// NEW: Get comment count for an adoption post
+router.get("/:adoptionId/comments/count", jwtVerification, getCommentCount);
+
+// NEW: Get like status for current user
+router.get("/:adoptionId/like-status", jwtVerification, getLikeStatus);
 
 // Request for adoption
 router.post("/:adoptionId/request", jwtVerification, requestAdoption);

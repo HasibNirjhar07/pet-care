@@ -5,12 +5,60 @@ import { Link, useNavigate } from "react-router-dom";
 const NewsfeedPost = ({ post }) => {
   const navigate = useNavigate();
   const [liked, setLiked] = useState(false);
-  const [likes, setLikes] = useState(post.likes);
+  const [likes, setLikes] = useState(post.likes || 0);
   const [showComments, setShowComments] = useState(false);
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
+  const [commentCount, setCommentCount] = useState(0);
   const [replyingTo, setReplyingTo] = useState(null);
   const [showLikedBy, setShowLikedBy] = useState(false);
+
+  const currentUserId = localStorage.getItem("userId");
+
+  // Initialize like state and comment count on component mount
+  useEffect(() => {
+    const initializePostData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        
+        // Check if current user has liked this post
+        const likeRes = await fetch(
+          `http://localhost:3000/adoption/${post.adoptionId}/like-status`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        
+        if (likeRes.ok) {
+          const likeData = await likeRes.json();
+          setLiked(likeData.liked);
+          setLikes(likeData.totalLikes);
+        }
+
+        // Get comment count
+        const commentRes = await fetch(
+          `http://localhost:3000/adoption/${post.adoptionId}/comments/count`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        
+        if (commentRes.ok) {
+          const commentData = await commentRes.json();
+          setCommentCount(commentData.count);
+        }
+        
+      } catch (error) {
+        console.error("Error initializing post data:", error);
+      }
+    };
+
+    initializePostData();
+  }, [post.adoptionId]);
 
   const handleLike = async () => {
     try {
@@ -25,8 +73,9 @@ const NewsfeedPost = ({ post }) => {
         }
       );
       if (res.ok) {
-        setLiked(!liked);
-        setLikes(liked ? likes - 1 : likes + 1);
+        const data = await res.json();
+        setLiked(data.liked);
+        setLikes(data.totalLikes);
       }
     } catch (error) {
       console.error("Error liking post:", error);
@@ -34,6 +83,8 @@ const NewsfeedPost = ({ post }) => {
   };
 
   const handleComment = async () => {
+    if (!comment.trim()) return;
+    
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
@@ -49,7 +100,25 @@ const NewsfeedPost = ({ post }) => {
       );
       if (res.ok) {
         const newComment = await res.json();
-        setComments([...comments, newComment]);
+        
+        // If replying to a comment, add to the parent's replies
+        if (replyingTo) {
+          const updatedComments = comments.map(c => {
+            if (c._id === replyingTo) {
+              return {
+                ...c,
+                replies: [...(c.replies || []), newComment]
+              };
+            }
+            return c;
+          });
+          setComments(updatedComments);
+        } else {
+          // If it's a top-level comment, add to main comments array
+          setComments([...comments, newComment]);
+        }
+        
+        setCommentCount(commentCount + 1);
         setComment("");
         setReplyingTo(null);
       }
@@ -73,11 +142,13 @@ const NewsfeedPost = ({ post }) => {
         if (res.ok) {
           const data = await res.json();
           setComments(data);
+          setCommentCount(data.length);
         }
       } catch (error) {
         console.error("Error fetching comments:", error);
       }
     };
+    
     if (showComments) {
       fetchComments();
     }
@@ -107,8 +178,6 @@ const NewsfeedPost = ({ post }) => {
       alert("Error sending adoption request.");
     }
   };
-
-  const currentUserId = localStorage.getItem("userId");
 
   return (
     <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden mb-6">
@@ -209,7 +278,7 @@ const NewsfeedPost = ({ post }) => {
               className="flex items-center space-x-2 text-sm text-gray-500 hover:text-blue-500 transition-colors"
             >
               <MessageSquare size={20} />
-              <span>{comments.length}</span>
+              <span>{commentCount}</span>
             </button>
 
             <button className="flex items-center space-x-2 text-sm text-gray-500 hover:text-green-500 transition-colors">
@@ -290,11 +359,17 @@ const NewsfeedPost = ({ post }) => {
                 }
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleComment();
+                  }
+                }}
                 className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
               <button
                 onClick={handleComment}
-                className="bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-600 transition-colors"
+                disabled={!comment.trim()}
+                className="bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Post
               </button>

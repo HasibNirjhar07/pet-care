@@ -108,7 +108,22 @@ const commentOnAdoption = async (req, res) => {
         adoption.comments.push(newComment);
         await adoption.save();
 
-        res.status(201).json(adoption.comments[adoption.comments.length - 1]);
+        // Fetch the user details to include in response
+        const user = await User.findById(userId).select('name');
+        
+        // Get the newly added comment and format it properly
+        const addedComment = adoption.comments[adoption.comments.length - 1];
+        const formattedComment = {
+            _id: addedComment._id,
+            userId: addedComment.userId,
+            comment: addedComment.comment,
+            parentId: addedComment.parentId,
+            userName: user ? user.name : "Unknown User",
+            createdAt: addedComment.createdAt,
+            replies: []
+        };
+
+        res.status(201).json(formattedComment);
     } catch (error) {
         res.status(500).json({ message: "Error adding comment", error: error.message });
     }
@@ -152,6 +167,76 @@ const getCommentsForAdoption = async (req, res) => {
     }
 };
 
+// NEW: Get comment count for an adoption post
+const getCommentCount = async (req, res) => {
+    try {
+        const { adoptionId } = req.params;
+
+        const adoption = await PetAdoption.findById(adoptionId).select('comments');
+        if (!adoption) {
+            return res.status(404).json({ message: "Adoption post not found" });
+        }
+
+        const count = adoption.comments ? adoption.comments.length : 0;
+        res.json({ count });
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching comment count", error: error.message });
+    }
+};
+
+// NEW: Get like status for current user
+const getLikeStatus = async (req, res) => {
+    try {
+        const { adoptionId } = req.params;
+        const userId = req.user._id;
+
+        const adoption = await PetAdoption.findById(adoptionId).select('likes');
+        if (!adoption) {
+            return res.status(404).json({ message: "Adoption post not found" });
+        }
+
+        const liked = adoption.likes.includes(userId);
+        const totalLikes = adoption.likes.length;
+
+        res.json({ liked, totalLikes });
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching like status", error: error.message });
+    }
+};
+
+// UPDATED: Modified likeAdoptionPost to return proper response format
+const likeAdoptionPost = async (req, res) => {
+    try {
+        const { adoptionId } = req.params;
+        const userId = req.user._id;
+
+        const adoption = await PetAdoption.findById(adoptionId);
+        if (!adoption) {
+            return res.status(404).json({ message: "Adoption post not found" });
+        }
+
+        const index = adoption.likes.indexOf(userId);
+        let liked;
+        
+        if (index === -1) {
+            adoption.likes.push(userId);
+            liked = true;
+        } else {
+            adoption.likes.splice(index, 1);
+            liked = false;
+        }
+
+        await adoption.save();
+
+        // Return the expected format for frontend
+        res.json({ 
+            liked: liked,
+            totalLikes: adoption.likes.length 
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Error liking adoption post", error: error.message });
+    }
+};
 
 const requestAdoption = async (req, res) => {
     try {
@@ -233,7 +318,6 @@ const viewAdoptionRequests = async (req, res) => {
         res.status(500).json({ message: "Error fetching adoption requests", error: error.message });
     }
 };
-
 
 const scheduleMeeting = async (req, res) => {
     try {
@@ -381,28 +465,20 @@ const updateAdoptionPost = async (req, res) => {
     }
 };
 
-const likeAdoptionPost = async (req, res) => {
-    try {
-        const { adoptionId } = req.params;
-        const userId = req.user._id;
-
-        const adoption = await PetAdoption.findById(adoptionId);
-        if (!adoption) {
-            return res.status(404).json({ message: "Adoption post not found" });
-        }
-
-        const index = adoption.likes.indexOf(userId);
-        if (index === -1) {
-            adoption.likes.push(userId);
-        } else {
-            adoption.likes.splice(index, 1);
-        }
-
-        await adoption.save();
-        res.json({ message: "Adoption post like status updated", likes: adoption.likes });
-    } catch (error) {
-        res.status(500).json({ message: "Error liking adoption post", error: error.message });
-    }
+module.exports = { 
+    postAdoptionRequest, 
+    getAvailablePets, 
+    commentOnAdoption, 
+    requestAdoption, 
+    viewAdoptionRequests, 
+    scheduleMeeting, 
+    getCommentsForAdoption, 
+    getCommentCount,        // NEW
+    getLikeStatus,          // NEW
+    updateAdoptionStatus, 
+    getMyAdoptionPosts, 
+    deleteAdoptionPost, 
+    updateAdoptionPost, 
+    likeAdoptionPost,       // UPDATED
+    deleteAdoptionRequest 
 };
-
-module.exports = { postAdoptionRequest, getAvailablePets, commentOnAdoption, requestAdoption, viewAdoptionRequests, scheduleMeeting, getCommentsForAdoption, updateAdoptionStatus, getMyAdoptionPosts, deleteAdoptionPost, updateAdoptionPost, likeAdoptionPost, deleteAdoptionRequest };

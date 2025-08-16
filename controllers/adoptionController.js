@@ -44,6 +44,7 @@ const getAvailablePets = async (req, res) => {
         // Fetch adoption details for each pet
         const petIds = pets.map(pet => pet._id);
         const adoptionDetails = await PetAdoption.find({ PetID: { $in: petIds } })
+            .populate("likes", "name") // Populate likes with user names
             .select("AdoptionDescription adoptionType ReturnDate PetID likes comments")
             .lean();
 
@@ -69,13 +70,14 @@ const getAvailablePets = async (req, res) => {
                 adoptionType: adoptionInfo ? adoptionInfo.adoptionType : null,
                 returnDate: adoptionInfo ? adoptionInfo.ReturnDate : null,
                 likes: (adoptionInfo && adoptionInfo.likes) ? adoptionInfo.likes.length : 0,
+                likedBy: (adoptionInfo && adoptionInfo.likes) ? adoptionInfo.likes.map(like => like.name) : [], // Populate likedBy with user names
                 comments: (adoptionInfo && adoptionInfo.comments) ? adoptionInfo.comments.length : 0,
                 postedBy: pet.ownerId ? {
                     id: pet.ownerId._id,
                     name: pet.ownerId.name,
                     email: pet.ownerId.email,
                     phone: pet.ownerId.phone
-                } : null
+                } : { id: null, name: "Unknown", email: "Unknown", phone: "Unknown" } // Ensure postedBy is always an object
             };
         });
 
@@ -116,12 +118,24 @@ const getCommentsForAdoption = async (req, res) => {
     try {
         const { adoptionId } = req.params;
 
-        const adoption = await PetAdoption.findById(adoptionId).lean();
+        const adoption = await PetAdoption.findById(adoptionId)
+            .populate({
+                path: 'comments.userId',
+                model: 'User',
+                select: 'name'
+            })
+            .lean();
         if (!adoption) return res.status(404).json({ message: "Adoption post not found" });
 
-        // Convert flat comments into a nested structure
+        // Convert flat comments into a nested structure and add userName
         const commentMap = {};
-        adoption.comments.forEach(comment => (commentMap[comment._id] = { ...comment, replies: [] }));
+        adoption.comments.forEach(comment => {
+            commentMap[comment._id] = {
+                ...comment,
+                userName: comment.userId ? comment.userId.name : "Unknown User",
+                replies: []
+            };
+        });
 
         const nestedComments = [];
         adoption.comments.forEach(comment => {
@@ -142,10 +156,27 @@ const getCommentsForAdoption = async (req, res) => {
 const requestAdoption = async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
-        if (!user.phoneVerified) return res.status(403).json({ message: "Phone number not verified" });
 
         const adoption = await PetAdoption.findById(req.params.adoptionId);
         if (!adoption) return res.status(404).json({ message: "Adoption post not found" });
+
+        const pet = await Pet.findById(adoption.PetID);
+        if (!pet) return res.status(404).json({ message: "Pet not found" });
+
+        // Prevent owner from requesting adoption for their own pet
+        if (pet.ownerId.toString() === req.user._id.toString()) {
+            return res.status(403).json({ message: "You cannot request adoption for your own pet." });
+        }
+
+        // Check if an adoption request already exists for this user and adoption post
+        const existingRequest = await AdoptionRequest.findOne({
+            adoptionId: adoption._id,
+            requesterId: req.user._id
+        });
+
+        if (existingRequest) {
+            return res.status(409).json({ message: "You have already sent an adoption request for this pet." });
+        }
 
         const request = new AdoptionRequest({ adoptionId: adoption._id, requesterId: req.user._id });
         await request.save();
@@ -153,6 +184,28 @@ const requestAdoption = async (req, res) => {
         res.status(201).json({ message: "Adoption request sent" });
     } catch (error) {
         res.status(500).json({ message: "Error requesting adoption", error: error.message });
+    }
+};
+
+const deleteAdoptionRequest = async (req, res) => {
+    try {
+        const { requestId } = req.params;
+        const userId = req.user._id;
+
+        const adoptionRequest = await AdoptionRequest.findById(requestId).populate("adoptionId");
+        if (!adoptionRequest) {
+            return res.status(404).json({ message: "Adoption request not found" });
+        }
+
+        const pet = await Pet.findById(adoptionRequest.adoptionId.PetID);
+        if (!pet || pet.ownerId.toString() !== userId.toString()) {
+            return res.status(403).json({ message: "You are not authorized to delete this request" });
+        }
+
+        await AdoptionRequest.findByIdAndDelete(requestId);
+        res.json({ message: "Adoption request deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Error deleting adoption request", error: error.message });
     }
 };
 
@@ -352,4 +405,4 @@ const likeAdoptionPost = async (req, res) => {
     }
 };
 
-module.exports = { postAdoptionRequest, getAvailablePets, commentOnAdoption, requestAdoption, viewAdoptionRequests, scheduleMeeting, getCommentsForAdoption, updateAdoptionStatus, getMyAdoptionPosts, deleteAdoptionPost, updateAdoptionPost, likeAdoptionPost };
+module.exports = { postAdoptionRequest, getAvailablePets, commentOnAdoption, requestAdoption, viewAdoptionRequests, scheduleMeeting, getCommentsForAdoption, updateAdoptionStatus, getMyAdoptionPosts, deleteAdoptionPost, updateAdoptionPost, likeAdoptionPost, deleteAdoptionRequest };

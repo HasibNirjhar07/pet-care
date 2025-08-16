@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { Heart, MessageSquare, Share2, User } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const NewsfeedPost = ({ post }) => {
+  const navigate = useNavigate();
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(post.likes);
   const [showComments, setShowComments] = useState(false);
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
   const [replyingTo, setReplyingTo] = useState(null);
+  const [showLikedBy, setShowLikedBy] = useState(false);
 
   const handleLike = async () => {
     try {
@@ -81,9 +83,32 @@ const NewsfeedPost = ({ post }) => {
     }
   }, [showComments, post.adoptionId]);
 
-  const handleAdoptionRequest = () => {
-    console.log(`Adoption request sent for ${post.pet.name}`);
+  const handleAdoptionRequest = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `http://localhost:3000/adoption/${post.adoptionId}/request`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (res.ok) {
+        alert("Adoption request sent successfully!");
+        navigate("/dashboard");
+      } else {
+        const errorData = await res.json();
+        alert(errorData.message || "Failed to send adoption request.");
+      }
+    } catch (error) {
+      console.error("Error sending adoption request:", error);
+      alert("Error sending adoption request.");
+    }
   };
+
+  const currentUserId = localStorage.getItem("userId");
 
   return (
     <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden mb-6">
@@ -170,6 +195,15 @@ const NewsfeedPost = ({ post }) => {
               <span>{likes}</span>
             </button>
 
+            {post.likedBy && post.likedBy.length > 0 && (
+              <button
+                onClick={() => setShowLikedBy(!showLikedBy)}
+                className="text-sm text-gray-500 hover:underline"
+              >
+                {post.likedBy.length} likes
+              </button>
+            )}
+
             <button
               onClick={() => setShowComments(!showComments)}
               className="flex items-center space-x-2 text-sm text-gray-500 hover:text-blue-500 transition-colors"
@@ -184,15 +218,25 @@ const NewsfeedPost = ({ post }) => {
             </button>
           </div>
 
-          {post.status === "Available" && (
-            <button
-              onClick={handleAdoptionRequest}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-105"
-            >
-              Request Adoption
-            </button>
-          )}
+          {post.status === "Available" &&
+            post.postedBy?.id !== currentUserId && (
+              <button
+                onClick={handleAdoptionRequest}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-105"
+              >
+                Request Adoption
+              </button>
+            )}
         </div>
+
+        {/* Liked By Section */}
+        {showLikedBy && post.likedBy && post.likedBy.length > 0 && (
+          <div className="border-t border-gray-200 pt-4 mt-4">
+            <p className="text-sm font-medium text-gray-700 mb-2">
+              Liked by: {post.likedBy.join(", ")}
+            </p>
+          </div>
+        )}
 
         {/* Comments Section */}
         {showComments && (
@@ -203,7 +247,10 @@ const NewsfeedPost = ({ post }) => {
                   <User size={16} className="text-gray-600" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-gray-800">{c.comment}</p>
+                  <p className="text-sm text-gray-800">
+                    <span className="font-semibold">{c.userName}:</span>{" "}
+                    {c.comment}
+                  </p>
                   <button
                     onClick={() => setReplyingTo(c._id)}
                     className="text-xs text-gray-500 hover:underline"
@@ -221,6 +268,9 @@ const NewsfeedPost = ({ post }) => {
                         </div>
                         <div className="flex-1">
                           <p className="text-sm text-gray-800">
+                            <span className="font-semibold">
+                              {reply.userName}:
+                            </span>{" "}
                             {reply.comment}
                           </p>
                         </div>

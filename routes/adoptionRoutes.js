@@ -2,7 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const { jwtVerification } = require('../middlewares/authMiddleware');
-const { postAdoptionRequest, getAvailablePets, commentOnAdoption, requestAdoption, viewAdoptionRequests, getCommentsForAdoption, scheduleMeeting ,updateAdoptionStatus, getMyAdoptionPosts, deleteAdoptionPost, updateAdoptionPost, likeAdoptionPost } = require("../controllers/adoptionController");
+const { postAdoptionRequest, getAvailablePets, commentOnAdoption, requestAdoption, viewAdoptionRequests, getCommentsForAdoption, scheduleMeeting ,updateAdoptionStatus, getMyAdoptionPosts, deleteAdoptionPost, updateAdoptionPost, likeAdoptionPost, deleteAdoptionRequest } = require("../controllers/adoptionController");
 
 // Get all adoption posts
 router.get("/myPosts", jwtVerification, getMyAdoptionPosts);
@@ -30,6 +30,9 @@ router.post("/:adoptionId/request", jwtVerification, requestAdoption);
 
 // View adoption requests
 router.get("/:adoptionId/requests", jwtVerification, viewAdoptionRequests);
+
+// Delete an adoption request
+router.delete("/request/:requestId", jwtVerification, deleteAdoptionRequest);
 
 // Schedule Meeting
 router.post("/schedule-meeting/:requestId", jwtVerification, scheduleMeeting);

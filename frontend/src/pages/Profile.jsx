@@ -31,9 +31,9 @@ const Profile = () => {
           name: data.name,
           email: data.email,
           phone: data.phone,
-          location: data.location || "Need to update code",
-          bio: data.bio || "Need to update code",
-          profileImage: data.photoURL || "https://via.placeholder.com/150",
+          location: data.location || "", // Changed default to empty string
+          bio: data.bio || "", // Changed default to empty string
+          profileImage: data.photoURL || "",
         });
       } catch (err) {
         console.error("Error fetching user profile:", err);
@@ -50,7 +50,7 @@ const Profile = () => {
   return (
     <div className="min-h-screen mt-15 bg-gradient-to-br from-blue-50 to-purple-50 p-4">
       <div className="max-w-6xl mx-auto">
-        <ProfileHeader />
+        <ProfileHeader userProfile={userProfile} />
         <ProfileInfo
           userProfile={userProfile}
           setUserProfile={setUserProfile}

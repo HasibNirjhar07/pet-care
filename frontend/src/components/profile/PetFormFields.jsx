@@ -1,21 +1,34 @@
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 
-const PetFormFields = ({ petData, setPetData, addTrait, removeTrait, addHealthRecord, removeHealthRecord }) => {
+const PetFormFields = ({
+  petData,
+  setPetData,
+  addTrait,
+  removeTrait,
+  addHealthRecord,
+  removeHealthRecord,
+}) => {
   const handleAddTrait = (e) => {
-    if (e.key === 'Enter' && e.target.value.trim()) {
+    if (e.key === "Enter" && e.target.value.trim()) {
       addTrait(e.target.value.trim());
-      e.target.value = '';
+      e.target.value = "";
     }
   };
 
   const handleAddHealthRecord = (e) => {
-    if (e.key === 'Enter' && e.target.value.trim()) {
+    if (e.key === "Enter" && e.target.value.trim()) {
       addHealthRecord(e.target.value.trim());
-      e.target.value = '';
+      e.target.value = "";
     }
   };
 
@@ -23,7 +36,9 @@ const PetFormFields = ({ petData, setPetData, addTrait, removeTrait, addHealthRe
     <div className="space-y-4">
       <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Pet Name *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Pet Name *
+          </label>
           <Input
             value={petData.name}
             onChange={(e) => setPetData({ ...petData, name: e.target.value })}
@@ -32,8 +47,15 @@ const PetFormFields = ({ petData, setPetData, addTrait, removeTrait, addHealthRe
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Species *</label>
-          <Select value={petData.species} onValueChange={(value) => setPetData({ ...petData, species: value })}>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Species *
+          </label>
+          <Select
+            value={petData.species}
+            onValueChange={(value) =>
+              setPetData({ ...petData, species: value })
+            }
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select species" />
             </SelectTrigger>
@@ -50,7 +72,9 @@ const PetFormFields = ({ petData, setPetData, addTrait, removeTrait, addHealthRe
           </Select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Breed *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Breed *
+          </label>
           <Input
             value={petData.breed}
             onChange={(e) => setPetData({ ...petData, breed: e.target.value })}
@@ -59,16 +83,22 @@ const PetFormFields = ({ petData, setPetData, addTrait, removeTrait, addHealthRe
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Date of Birth *
+          </label>
           <Input
             type="date"
             value={petData.dateOfBirth}
-            onChange={(e) => setPetData({ ...petData, dateOfBirth: e.target.value })}
+            onChange={(e) =>
+              setPetData({ ...petData, dateOfBirth: e.target.value })
+            }
             required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Color *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Color *
+          </label>
           <Input
             value={petData.color}
             onChange={(e) => setPetData({ ...petData, color: e.target.value })}
@@ -76,23 +106,12 @@ const PetFormFields = ({ petData, setPetData, addTrait, removeTrait, addHealthRe
             required
           />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Status *</label>
-          <Select value={petData.status} onValueChange={(value) => setPetData({ ...petData, status: value })}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Available">Available</SelectItem>
-              <SelectItem value="Pending">Pending</SelectItem>
-              <SelectItem value="Adopted">Adopted</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
       </div>
-      
+
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Profile Photo</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Profile Photo
+        </label>
         <Input
           type="file"
           accept="image/*"
@@ -105,9 +124,11 @@ const PetFormFields = ({ petData, setPetData, addTrait, removeTrait, addHealthRe
           }}
         />
       </div>
-      
+
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Additional Photos</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Additional Photos
+        </label>
         <Input
           type="file"
           accept="image/*"
@@ -121,20 +142,26 @@ const PetFormFields = ({ petData, setPetData, addTrait, removeTrait, addHealthRe
           }}
         />
       </div>
-      
+
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Description
+        </label>
         <Textarea
           value={petData.description}
-          onChange={(e) => setPetData({ ...petData, description: e.target.value })}
+          onChange={(e) =>
+            setPetData({ ...petData, description: e.target.value })
+          }
           rows={3}
           placeholder="Describe your pet's personality and characteristics"
         />
       </div>
-      
+
       {addTrait && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">Pet Traits</label>
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Pet Traits
+          </label>
           <div className="flex flex-wrap gap-2 mb-3">
             {petData.traits.map((trait, index) => (
               <span
@@ -142,7 +169,10 @@ const PetFormFields = ({ petData, setPetData, addTrait, removeTrait, addHealthRe
                 className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm flex items-center gap-2"
               >
                 {trait}
-                <button onClick={() => removeTrait(trait)} className="text-blue-600 hover:text-blue-800">
+                <button
+                  onClick={() => removeTrait(trait)}
+                  className="text-blue-600 hover:text-blue-800"
+                >
                   <X className="w-3 h-3" />
                 </button>
               </span>
@@ -158,7 +188,7 @@ const PetFormFields = ({ petData, setPetData, addTrait, removeTrait, addHealthRe
                 const input = e.target.previousElementSibling;
                 if (input.value.trim()) {
                   addTrait(input.value.trim());
-                  input.value = '';
+                  input.value = "";
                 }
               }}
             >
@@ -167,10 +197,12 @@ const PetFormFields = ({ petData, setPetData, addTrait, removeTrait, addHealthRe
           </div>
         </div>
       )}
-      
+
       {addHealthRecord && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">Health Records</label>
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Health Records
+          </label>
           <div className="flex flex-wrap gap-2 mb-3">
             {petData.healthRecords.map((record, index) => (
               <span
@@ -178,7 +210,10 @@ const PetFormFields = ({ petData, setPetData, addTrait, removeTrait, addHealthRe
                 className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm flex items-center gap-2"
               >
                 {record}
-                <button onClick={() => removeHealthRecord(record)} className="text-green-600 hover:text-green-800">
+                <button
+                  onClick={() => removeHealthRecord(record)}
+                  className="text-green-600 hover:text-green-800"
+                >
                   <X className="w-3 h-3" />
                 </button>
               </span>
@@ -194,7 +229,7 @@ const PetFormFields = ({ petData, setPetData, addTrait, removeTrait, addHealthRe
                 const input = e.target.previousElementSibling;
                 if (input.value.trim()) {
                   addHealthRecord(input.value.trim());
-                  input.value = '';
+                  input.value = "";
                 }
               }}
             >

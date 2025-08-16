@@ -1,6 +1,15 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, User, Heart, Phone } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  User,
+  Heart,
+  Phone,
+  ChevronDown,
+} from "lucide-react";
 
 const SignUpPage = ({ onSignUp }) => {
   const navigate = useNavigate();
@@ -11,7 +20,24 @@ const SignUpPage = ({ onSignUp }) => {
     email: "",
     password: "",
     confirmPassword: "",
+    location: "", // New field
+    profileImage: null, // Change to null for file object
   });
+
+  const [selectedFile, setSelectedFile] = useState(null); // State to hold the selected file
+
+  const dhakaLocations = [
+    "Mirpur",
+    "Gulshan",
+    "Banani",
+    "Dhanmondi",
+    "Mohammadpur",
+    "Uttara",
+    "Bashundhara R/A",
+    "Tejgaon",
+    "Motijheel",
+    "Old Dhaka",
+  ];
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -28,8 +54,15 @@ const SignUpPage = ({ onSignUp }) => {
   const handleUsernameSignUp = async (e) => {
     e.preventDefault();
 
-    const { name, username, email, password, confirmPassword, phone } =
-      formData;
+    const {
+      name,
+      username,
+      email,
+      password,
+      confirmPassword,
+      phone,
+      location,
+    } = formData; // profileImage will be handled separately
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
@@ -45,18 +78,20 @@ const SignUpPage = ({ onSignUp }) => {
     setError("");
 
     try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("name", name);
+      formDataToSend.append("username", username);
+      formDataToSend.append("email", email);
+      formDataToSend.append("password", password);
+      formDataToSend.append("phone", phone);
+      formDataToSend.append("location", location);
+      if (selectedFile) {
+        formDataToSend.append("profilePhoto", selectedFile); // Append the file
+      }
+
       const response = await fetch("http://localhost:3000/api/auth/signup", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          username,
-          email,
-          password,
-          phone,
-        }),
+        body: formDataToSend, // Send as FormData
       });
 
       const data = await response.json();
@@ -108,7 +143,7 @@ const SignUpPage = ({ onSignUp }) => {
                 htmlFor="username"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Username
+                Username <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -131,7 +166,7 @@ const SignUpPage = ({ onSignUp }) => {
                 htmlFor="name"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Full Name
+                Full Name <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -154,7 +189,7 @@ const SignUpPage = ({ onSignUp }) => {
                 htmlFor="email"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Email Address
+                Email Address <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -177,7 +212,7 @@ const SignUpPage = ({ onSignUp }) => {
                 htmlFor="phone"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Phone Number
+                Phone Number <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -194,13 +229,60 @@ const SignUpPage = ({ onSignUp }) => {
               </div>
             </div>
 
+            {/* Location Dropdown */}
+            <div>
+              <label
+                htmlFor="location"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Location <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <select
+                  id="location"
+                  name="location"
+                  required // Make location mandatory
+                  value={formData.location}
+                  onChange={handleInputChange}
+                  className="appearance-none relative block w-full pl-3 pr-10 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                  <option value="">Select a location</option>
+                  {dhakaLocations.map((loc) => (
+                    <option key={loc} value={loc}>
+                      {loc}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+
+            {/* Profile Photo Input */}
+            <div>
+              <label
+                htmlFor="profilePhoto"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Profile Photo
+              </label>
+              <div className="relative">
+                <input
+                  id="profilePhoto"
+                  name="profilePhoto"
+                  type="file"
+                  onChange={(e) => setSelectedFile(e.target.files[0])}
+                  className="appearance-none relative block w-full pl-3 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                />
+              </div>
+            </div>
+
             {/* Password Input */}
             <div>
               <label
                 htmlFor="password"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Password
+                Password <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -234,7 +316,7 @@ const SignUpPage = ({ onSignUp }) => {
                 htmlFor="confirmPassword"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Confirm Password
+                Confirm Password <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />

@@ -11,6 +11,8 @@ const userSchema = new mongoose.Schema({
     role: { type: String, required: true, default: "user" },                    // ["user", "admin"]
     petsOwned: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Pet' }],
     profilePhoto: { type: String },
+    location: { type: String },
+    bio: { type: String },
     temporaryAdoptions: [
         {
             petId: { type: mongoose.Schema.Types.ObjectId, ref: 'Pet' },        

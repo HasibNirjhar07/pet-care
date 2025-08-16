@@ -1,14 +1,47 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
+const fs = require('fs'); // Import fs
+const path = require('path'); // Import path
 
 // JWT Verification
 const jwt = require("jsonwebtoken");
 const { secret } = require("../config/jwtSecret");
 
+// Helper function to handle profile photo upload for users
+const handleUserProfilePhotoUpload = async (userId, file) => {
+  let profilePhotoUrl = null;
+
+  if (!file) {
+    return profilePhotoUrl;
+  }
+
+  const now = new Date();
+  const creationDate = `${String(now.getDate()).padStart(2, '0')}${String(now.getMonth() + 1).padStart(2, '0')}${now.getFullYear()}`;
+  const serial = String(Date.now()).slice(-5);
+  const newFileName = `${userId}_profile_${creationDate}_${serial}${path.extname(file.originalname)}`;
+  const oldPath = file.path;
+  const userPhotoDir = path.join(__dirname, '../uploads/photos/users', userId.toString()); // User-specific directory
+  const newPath = path.join(userPhotoDir, newFileName);
+
+  // Create user-specific directory if it doesn't exist
+  if (!fs.existsSync(userPhotoDir)) {
+    await fs.promises.mkdir(userPhotoDir, { recursive: true });
+  }
+
+  await fs.promises.rename(oldPath, newPath);
+  profilePhotoUrl = `/uploads/photos/users/${userId.toString()}/${newFileName}`; // Correct path
+
+  return profilePhotoUrl;
+};
+
 const createNewUser = async (req, res) => {
-  const { name, username, email, password, phone } = req.body;
+  const { name, username, email, password, phone, location } = req.body; // profilePhoto will be from req.file
 
   if (!username || !password || !name || !email || !phone) {
+    // Clean up uploaded file if validation fails
+    if (req.file) {
+      await fs.promises.unlink(req.file.path).catch(err => console.error("Error cleaning up temp file:", err));
+    }
     return res
       .status(400)
       .json({ error: "Please provide all required fields" });
@@ -28,18 +61,29 @@ const createNewUser = async (req, res) => {
       email,
       password: hashedPassword,
       phone,
+      location, // Include new field
+      // profilePhoto will be set after saving user to get ID
     });
-    await user.save();
+    const savedUser = await user.save(); // Save user to get _id
+
+    let profilePhotoUrl = null;
+    if (req.file) {
+      profilePhotoUrl = await handleUserProfilePhotoUpload(savedUser._id, req.file);
+      savedUser.profilePhoto = profilePhotoUrl;
+      await savedUser.save(); // Save again with profile photo URL
+    }
 
     // Return user data without password
     const userData = {
-      id: user._id,
-      username: user.username,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      phoneVerified: user.phoneVerified,
-      role: user.role || "user",
+      id: savedUser._id,
+      username: savedUser.username,
+      name: savedUser.name,
+      email: savedUser.email,
+      phone: savedUser.phone,
+      location: savedUser.location, // Include new field
+      profilePhoto: savedUser.profilePhoto, // Include new field
+      phoneVerified: savedUser.phoneVerified,
+      role: savedUser.role || "user",
     };
 
     res.status(201).json({
@@ -48,6 +92,10 @@ const createNewUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Error inserting user:", error);
+    // Clean up uploaded file on error
+    if (req.file) {
+      await fs.promises.unlink(req.file.path).catch(err => console.error("Error cleaning up temp file:", err));
+    }
     return res.status(500).json({ error: "Server error" });
   }
 };
@@ -171,7 +219,7 @@ const loginUser = async (req, res) => {
       phoneVerified: user.phoneVerified,
       role: user.role || "user",
       displayName: user.name, // For navbar compatibility
-      photoURL: user.photoURL || null, // Add this field to your User model if needed
+      photoURL: user.profilePhoto || null, // Use profilePhoto from User model
     };
 
     res.status(200).json({
@@ -201,10 +249,12 @@ const getUserInfo = async (req, res) => {
       name: user.name,
       email: user.email,
       phone: user.phone,
+      location: user.location, // Include location
+      bio: user.bio, // Include bio
       phoneVerified: user.phoneVerified,
       role: user.role || "user",
       displayName: user.name,
-      photoURL: user.photoURL || null,
+      photoURL: user.profilePhoto || null, // Use profilePhoto from User model
     };
 
     res.json(userData);

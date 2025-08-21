@@ -18,6 +18,7 @@ import {
   ChevronDown,
   Shield,
 } from "lucide-react";
+import NotificationDropdown from "./NotificationDropdown";
 
 const Navbar = ({
   isAuthenticated = false,
@@ -326,16 +327,7 @@ const Navbar = ({
                   </button>
 
                   {/* Notifications */}
-                  <div className="relative">
-                    <button className="p-2 text-gray-600 hover:text-purple-600 hover:bg-gray-100 rounded-full transition-colors cursor-pointer">
-                      <Bell className="h-5 w-5" />
-                      {notificationCount > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                          {notificationCount > 9 ? "9+" : notificationCount}
-                        </span>
-                      )}
-                    </button>
-                  </div>
+                  <NotificationDropdown />
 
                   {/* Shopping Cart */}
                   <div className="relative">

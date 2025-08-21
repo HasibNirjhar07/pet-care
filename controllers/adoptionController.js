@@ -2,6 +2,7 @@ const PetAdoption = require("../models/PetAdoption");
 const Pet = require("../models/Pet");
 const User = require("../models/User");
 const AdoptionRequest = require("../models/AdoptionRequest");
+const { createNotification } = require("./notificationController");
 
 const postAdoptionRequest = async (req, res) => {
     const { petId, adoptionDescription, adoptionType, returnDate } = req.body;
@@ -266,6 +267,12 @@ const requestAdoption = async (req, res) => {
         const request = new AdoptionRequest({ adoptionId: adoption._id, requesterId: req.user._id });
         await request.save();
 
+        // Create simple notification
+        const requesterUser = await User.findById(req.user._id);
+        const message = `New adoption request for ${pet.name} from ${requesterUser.name}`;
+        
+        await createNotification(pet.ownerId, message, pet._id, 'adoption_request');
+
         res.status(201).json({ message: "Adoption request sent" });
     } catch (error) {
         res.status(500).json({ message: "Error requesting adoption", error: error.message });
@@ -287,7 +294,21 @@ const deleteAdoptionRequest = async (req, res) => {
             return res.status(403).json({ message: "You are not authorized to delete this request" });
         }
 
+        // Get requester details for notification
+        const requester = await User.findById(adoptionRequest.requesterId);
+        
         await AdoptionRequest.findByIdAndDelete(requestId);
+        
+        // Send notification to the requester
+        if (requester) {
+            await createNotification(
+                adoptionRequest.requesterId,
+                `Your adoption request for ${pet.name} has been rejected.`,
+                pet._id,
+                'adoption_rejected'
+            );
+        }
+
         res.json({ message: "Adoption request deleted successfully" });
     } catch (error) {
         res.status(500).json({ message: "Error deleting adoption request", error: error.message });
@@ -344,6 +365,23 @@ const scheduleMeeting = async (req, res) => {
         adoptionRequest.status = "meet scheduled";
         await adoptionRequest.save();
 
+        // Send notification to the requester
+        const meetingDateFormatted = new Date(meetingDate).toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        await createNotification(
+            adoptionRequest.requesterId,
+            `Great news! A meeting has been scheduled for your adoption request for ${pet.name} on ${meetingDateFormatted}.`,
+            pet._id,
+            'meeting_scheduled'
+        );
+
         res.status(200).json({ message: "Meeting scheduled successfully", adoptionRequest });
     } catch (error) {
         res.status(500).json({ message: "Error scheduling meeting", error: error.message });
@@ -369,6 +407,14 @@ const updateAdoptionStatus = async (req, res) => {
         pet.status = "Adopted";
         pet.ownerId = adopter._id;
         await pet.save();
+
+        // Send notification to the adopter
+        await createNotification(
+            request.requesterId,
+            `Congratulations! Your adoption request for ${pet.name} has been accepted. You are now the proud owner!`,
+            pet._id,
+            'adoption_accepted'
+        );
 
         // Remove adoption post & adoption requests
         // await AdoptionRequest.deleteMany({ adoptionId });
@@ -480,5 +526,5 @@ module.exports = {
     deleteAdoptionPost, 
     updateAdoptionPost, 
     likeAdoptionPost,       // UPDATED
-    deleteAdoptionRequest 
+    deleteAdoptionRequest
 };

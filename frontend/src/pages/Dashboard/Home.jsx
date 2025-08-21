@@ -58,7 +58,15 @@ const Dashboard = ({ user, onLogout }) => {
   }, []);
 
   if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+
+  if (error && posts.length === 0) {
+    // Only show error if it's a real fetch error, not just empty list
+    if (error.includes('Failed to fetch available pets')) {
+      return <div>No pets are available for adoption.</div>;
+    } else {
+      return <div>Error: {error}</div>;
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">

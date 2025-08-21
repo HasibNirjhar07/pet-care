@@ -17,7 +17,7 @@ const {
     deleteAdoptionPost, 
     updateAdoptionPost, 
     likeAdoptionPost, 
-    deleteAdoptionRequest 
+    deleteAdoptionRequest
 } = require("../controllers/adoptionController");
 
 // Get all adoption posts

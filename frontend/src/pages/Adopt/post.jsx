@@ -7,8 +7,10 @@ import ScheduleMeetingModal from "@/components/ScheduleMeetingModal";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { usePostAPI } from "@/hooks/usePostAPI";
 import { PawPrint } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 const Post = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -49,6 +51,21 @@ const Post = () => {
   useEffect(() => {
     loadPosts();
   }, []);
+
+  // Check for viewRequests query parameter and auto-open modal
+  useEffect(() => {
+    const viewRequestsParam = searchParams.get('viewRequests');
+    if (viewRequestsParam && posts.length > 0) {
+      // Find the post that matches the adoption ID
+      const targetPost = posts.find(post => post.adoptionId === viewRequestsParam);
+      if (targetPost) {
+        handleViewRequests(viewRequestsParam);
+        // Remove the query parameter after opening the modal
+        searchParams.delete('viewRequests');
+        setSearchParams(searchParams);
+      }
+    }
+  }, [posts, searchParams, setSearchParams]);
 
   const handleDelete = async (adoptionId) => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;

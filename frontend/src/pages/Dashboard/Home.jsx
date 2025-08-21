@@ -23,11 +23,13 @@ const Dashboard = ({ user, onLogout }) => {
         const formattedPosts = data.map((pet) => ({
           id: pet._id,
           adoptionId: pet.adoptionId,
+          postedBy: pet.postedBy,
           user: {
-            name: pet.postedBy?.name,
-            avatar:
-              "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
-            location: "Unknown",
+            name: pet.postedBy?.name || "Unknown User",
+            avatar: pet.postedBy?.profilePhoto
+              ? `http://localhost:3000${pet.postedBy?.profilePhoto}`
+              : "https://ui-avatars.com/api/?name=Pet&background=random",
+            location: pet.postedBy?.location || "Unknown",
           },
           pet: {
             name: pet.name,
@@ -36,14 +38,23 @@ const Dashboard = ({ user, onLogout }) => {
             age: `${
               new Date().getFullYear() - new Date(pet.dateOfBirth).getFullYear()
             } years`,
-            image: `http://localhost:3000${pet.photos[0]}`,
+            image: `http://localhost:3000${pet.profilePhoto}`,
             adoptionType: pet.adoptionType,
-            medicalHistory: pet.healthRecords.join(", "),
-            personality: pet.traits.join(", "),
+            returnDate:
+              pet.adoptionType === "temporary" ? pet.returnDate : null,
+            medicalHistory: Array.isArray(pet.healthRecords)
+              ? pet.healthRecords.join(", ")
+              : pet.healthRecords || "No medical history",
+            personality: {
+              text: Array.isArray(pet.traits)
+                ? pet.traits.join(", ")
+                : pet.traits || "Friendly",
+              style: { display: "flex", justifyContent: "flex-end" },
+            },
           },
           timestamp: new Date(pet.createdAt).toLocaleString(),
-          likes: pet.likes,
-          comments: pet.comments,
+          likes: pet.likes || 0,
+          comments: pet.comments || [],
           status: pet.status,
         }));
         setPosts(formattedPosts);
@@ -61,7 +72,7 @@ const Dashboard = ({ user, onLogout }) => {
 
   if (error && posts.length === 0) {
     // Only show error if it's a real fetch error, not just empty list
-    if (error.includes('Failed to fetch available pets')) {
+    if (error.includes("Failed to fetch available pets")) {
       return <div>No pets are available for adoption.</div>;
     } else {
       return <div>Error: {error}</div>;

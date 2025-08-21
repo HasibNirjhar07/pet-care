@@ -18,9 +18,14 @@ const NewsfeedPost = ({ post }) => {
   // Initialize like state and comment count on component mount
   useEffect(() => {
     const initializePostData = async () => {
+      if (!post.adoptionId) {
+        console.warn("No adoptionId found for post:", post);
+        return;
+      }
+
       try {
         const token = localStorage.getItem("token");
-        
+
         // Check if current user has liked this post
         const likeRes = await fetch(
           `http://localhost:3000/adoption/${post.adoptionId}/like-status`,
@@ -30,7 +35,7 @@ const NewsfeedPost = ({ post }) => {
             },
           }
         );
-        
+
         if (likeRes.ok) {
           const likeData = await likeRes.json();
           setLiked(likeData.liked);
@@ -46,12 +51,11 @@ const NewsfeedPost = ({ post }) => {
             },
           }
         );
-        
+
         if (commentRes.ok) {
           const commentData = await commentRes.json();
           setCommentCount(commentData.count);
         }
-        
       } catch (error) {
         console.error("Error initializing post data:", error);
       }
@@ -61,6 +65,11 @@ const NewsfeedPost = ({ post }) => {
   }, [post.adoptionId]);
 
   const handleLike = async () => {
+    if (!post.adoptionId) {
+      console.warn("No adoptionId found for post:", post);
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
@@ -84,7 +93,12 @@ const NewsfeedPost = ({ post }) => {
 
   const handleComment = async () => {
     if (!comment.trim()) return;
-    
+
+    if (!post.adoptionId) {
+      console.warn("No adoptionId found for post:", post);
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
@@ -100,14 +114,14 @@ const NewsfeedPost = ({ post }) => {
       );
       if (res.ok) {
         const newComment = await res.json();
-        
+
         // If replying to a comment, add to the parent's replies
         if (replyingTo) {
-          const updatedComments = comments.map(c => {
+          const updatedComments = comments.map((c) => {
             if (c._id === replyingTo) {
               return {
                 ...c,
-                replies: [...(c.replies || []), newComment]
+                replies: [...(c.replies || []), newComment],
               };
             }
             return c;
@@ -117,7 +131,7 @@ const NewsfeedPost = ({ post }) => {
           // If it's a top-level comment, add to main comments array
           setComments([...comments, newComment]);
         }
-        
+
         setCommentCount(commentCount + 1);
         setComment("");
         setReplyingTo(null);
@@ -129,6 +143,11 @@ const NewsfeedPost = ({ post }) => {
 
   useEffect(() => {
     const fetchComments = async () => {
+      if (!post.adoptionId) {
+        console.warn("No adoptionId found for post:", post);
+        return;
+      }
+
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(
@@ -148,13 +167,19 @@ const NewsfeedPost = ({ post }) => {
         console.error("Error fetching comments:", error);
       }
     };
-    
-    if (showComments) {
+
+    if (showComments && post.adoptionId) {
       fetchComments();
     }
   }, [showComments, post.adoptionId]);
 
   const handleAdoptionRequest = async () => {
+    if (!post.adoptionId) {
+      console.warn("No adoptionId found for post:", post);
+      alert("Unable to send adoption request. Missing adoption information.");
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
@@ -185,14 +210,26 @@ const NewsfeedPost = ({ post }) => {
       <div className="flex items-center justify-between p-4 pb-3">
         <div className="flex items-center space-x-3">
           <img
-            src={post.user.avatar}
-            alt={post.user.name}
+            src={
+              post.user?.avatar ||
+              "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face"
+            }
+            alt={post.user?.name || "User"}
             className="w-12 h-12 rounded-full object-cover"
+            onError={(e) => {
+              e.target.src =
+                "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face";
+            }}
           />
           <div>
-            <h3 className="font-semibold text-gray-900">{post.user.name}</h3>
+            <h3 className="font-semibold text-gray-900">
+              {post.user?.name || "Unknown User"}
+            </h3>
             <p className="text-sm text-gray-500">
-              {post.user.location} • {post.timestamp}
+              {post.user?.location || "Unknown Location"}
+            </p>
+            <p className="text-xs text-gray-400">
+              {post.timestamp || "Unknown Time"}
             </p>
           </div>
         </div>
@@ -211,12 +248,19 @@ const NewsfeedPost = ({ post }) => {
       <Link to={`/pet/${post.id}`}>
         <div className="relative">
           <img
-            src={post.pet.image}
-            alt={post.pet.name}
+            src={
+              post.pet?.image ||
+              "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=800&h=600&fit=crop&crop=center"
+            }
+            alt={post.pet?.name || "Pet"}
             className="w-full h-80 object-cover"
+            onError={(e) => {
+              e.target.src =
+                "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=800&h=600&fit=crop&crop=center";
+            }}
           />
           <div className="absolute top-4 left-4 bg-black bg-opacity-70 text-white text-xs px-3 py-1 rounded-full">
-            {post.pet.adoptionType} Adoption
+            {post.pet?.adoptionType || "Regular"} Adoption
           </div>
         </div>
       </Link>
@@ -225,29 +269,40 @@ const NewsfeedPost = ({ post }) => {
       <div className="p-4">
         <div className="flex justify-between items-start mb-4">
           <h2 className="text-xl font-bold text-gray-900">
-            Meet {post.pet.name}!
+            Meet {post.pet?.name || "Unknown Pet"}!
           </h2>
           <div className="text-right">
-            <p className="text-sm font-medium text-gray-600">{post.pet.type}</p>
-            <p className="text-sm text-gray-500">{post.pet.breed}</p>
+            <p className="text-sm font-medium text-gray-600">
+              {post.pet?.type || "Unknown Type"}
+            </p>
+            <p className="text-sm text-gray-500">
+              {post.pet?.breed || "Unknown Breed"}
+            </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <p className="text-sm text-gray-700">
-              <span className="font-medium">Age:</span> {post.pet.age}
+              <span className="font-medium">Age:</span>{" "}
+              {post.pet?.age || "Unknown"}
             </p>
             <p className="text-sm text-gray-700 mt-2">
               <span className="font-medium">Medical:</span>{" "}
-              {post.pet.medicalHistory}
+              {post.pet?.medicalHistory || "No medical history available"}
             </p>
           </div>
           <div>
             <p className="text-sm text-gray-700">
               <span className="font-medium">Personality:</span>{" "}
-              {post.pet.personality}
+              {post.pet?.personality?.text || "Friendly"}
             </p>
+            {post.pet?.adoptionType === "temporary" && post.pet?.returnDate && (
+              <p className="text-sm text-gray-700 mt-2">
+                <span className="font-medium">Return Date:</span>{" "}
+                {new Date(post.pet.returnDate).toLocaleDateString()}
+              </p>
+            )}
           </div>
         </div>
 
@@ -288,7 +343,7 @@ const NewsfeedPost = ({ post }) => {
           </div>
 
           {post.status === "Available" &&
-            post.postedBy?.id !== currentUserId && (
+            post.postedBy?._id !== currentUserId && (
               <button
                 onClick={handleAdoptionRequest}
                 className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-105"
@@ -360,7 +415,7 @@ const NewsfeedPost = ({ post }) => {
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === "Enter") {
                     handleComment();
                   }
                 }}

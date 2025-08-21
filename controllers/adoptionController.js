@@ -39,7 +39,7 @@ const postAdoptionRequest = async (req, res) => {
 const getAvailablePets = async (req, res) => {
     try {
         const pets = await Pet.find({ status: "Available" })
-            .populate("ownerId", "name email phone") // Fetch owner details
+            .populate("ownerId", "name email phone location profilePhoto") // Fetch owner details
             .lean();
 
         // Fetch adoption details for each pet
@@ -62,6 +62,7 @@ const getAvailablePets = async (req, res) => {
                 color: pet.color,
                 description: pet.description,
                 status: pet.status,
+                profilePhoto: pet.profilePhoto,
                 photos: pet.photos,
                 healthRecords: pet.healthRecords,
                 traits: pet.traits,
@@ -77,8 +78,10 @@ const getAvailablePets = async (req, res) => {
                     id: pet.ownerId._id,
                     name: pet.ownerId.name,
                     email: pet.ownerId.email,
-                    phone: pet.ownerId.phone
-                } : { id: null, name: "Unknown", email: "Unknown", phone: "Unknown" } // Ensure postedBy is always an object
+                    phone: pet.ownerId.phone,
+                    location: pet.ownerId.location,
+                    profilePhoto: pet.ownerId.profilePhoto
+                } : { id: null, name: "Unknown", email: "Unknown", phone: "Unknown", location: "Unknown", profilePhoto: "https://via.placeholder.com/150" } // Ensure postedBy is always an object
             };
         });
 

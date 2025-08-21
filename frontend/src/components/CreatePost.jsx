@@ -35,6 +35,7 @@ const CreatePost = ({ isAuthenticated = true, forceShowForm = false }) => {
   const [petAge, setPetAge] = useState("");
   const [petColor, setPetColor] = useState("");
   const [foundLocation, setFoundLocation] = useState("");
+  const [returnDate, setReturnDate] = useState(""); // New state for return date
 
   // Fetch user data (name and avatar)
   useEffect(() => {
@@ -74,7 +75,11 @@ const CreatePost = ({ isAuthenticated = true, forceShowForm = false }) => {
 
         const data = await res.json();
         setUserName(data.name || "User"); // Fallback to 'User' if name is missing
-        setUserAvatar(data.photoURL || "https://via.placeholder.com/40"); // Placeholder if no photoURL
+        setUserAvatar(
+          data.photoURL
+            ? `http://localhost:3000${data.photoURL}`
+            : "https://via.placeholder.com/40"
+        ); // Prepend base URL if photoURL exists
       } catch (err) {
         console.error("Error fetching user data:", err);
         setUserName("User"); // Default to User on error
@@ -137,6 +142,7 @@ const CreatePost = ({ isAuthenticated = true, forceShowForm = false }) => {
     setPetAge("");
     setPetColor("");
     setFoundLocation("");
+    setReturnDate(""); // Reset return date
     setMyPets([]); // Reset fetched pets as well
     if (!forceShowForm) {
       // Only reset showForm if not forced open
@@ -162,6 +168,11 @@ const CreatePost = ({ isAuthenticated = true, forceShowForm = false }) => {
       return;
     }
 
+    if (adoptionType === "temporary" && !returnDate) {
+      alert("Please provide a return date for temporary adoption.");
+      return;
+    }
+
     if (petSource === "my-pet" && !selectedPet) {
       alert("Please select your pet.");
       return;
@@ -184,6 +195,10 @@ const CreatePost = ({ isAuthenticated = true, forceShowForm = false }) => {
         adoptionDescription: postText,
         adoptionType,
       };
+
+      if (adoptionType === "temporary") {
+        payload.returnDate = returnDate;
+      }
 
       if (petSource === "my-pet") {
         payload.petId = selectedPet;
@@ -231,6 +246,9 @@ const CreatePost = ({ isAuthenticated = true, forceShowForm = false }) => {
                   src={userAvatar}
                   alt={userName}
                   className="w-full h-full rounded-full object-cover"
+                  onError={(e) => {
+                    e.target.src = "https://via.placeholder.com/40"; // Fallback on error
+                  }}
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-purple-600 to-pink-500 text-white flex items-center justify-center text-lg">
@@ -246,10 +264,9 @@ const CreatePost = ({ isAuthenticated = true, forceShowForm = false }) => {
                   alert("Please log in to create an adoption post.");
                 }
               }}
-              variant="outline"
-              className="flex-1 justify-start text-muted-foreground rounded-full bg-gray-100 hover:bg-gray-200 px-5 py-3 text-base"
+              className="flex-1 justify-start rounded-full px-5 py-3 text-base bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:from-purple-700 hover:to-pink-600 shadow-lg"
             >
-              Share a pet for adoption...
+              Share a pet for adoption
             </Button>
           </div>
         ) : (
@@ -261,6 +278,9 @@ const CreatePost = ({ isAuthenticated = true, forceShowForm = false }) => {
                     src={userAvatar}
                     alt={userName}
                     className="w-full h-full rounded-full object-cover"
+                    onError={(e) => {
+                      e.target.src = "https://via.placeholder.com/40"; // Fallback on error
+                    }}
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-purple-600 to-pink-500 text-white flex items-center justify-center text-lg">
@@ -430,6 +450,21 @@ const CreatePost = ({ isAuthenticated = true, forceShowForm = false }) => {
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Return Date for Temporary Adoption */}
+                {adoptionType === "temporary" && (
+                  <div className="space-y-2">
+                    <Label className="text-base font-semibold text-gray-700">
+                      Return Date
+                    </Label>
+                    <Input
+                      type="date"
+                      value={returnDate}
+                      onChange={(e) => setReturnDate(e.target.value)}
+                      className="h-12 text-base w-fit"
+                    />
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <Label className="text-base font-semibold text-gray-700">

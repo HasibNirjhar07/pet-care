@@ -5,7 +5,6 @@ import {
   Menu,
   X,
   Search,
-  Bell,
   User,
   Settings,
   LogOut,
@@ -24,9 +23,8 @@ const Navbar = ({
   isAuthenticated = false,
   userRole = "user",
   userName = "John Doe",
-  userAvatar = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
+  userAvatar = "https://via.placeholder.com/40", // Default placeholder
   cartCount = 3,
-  notificationCount = 5,
   onLogout,
   onSearch,
   currentPage = "home",
@@ -186,9 +184,16 @@ const Navbar = ({
       <div className="px-4 py-3 border-b border-gray-100">
         <div className="flex items-center space-x-3">
           <img
-            src={userAvatar}
+            src={
+              userAvatar.startsWith("/uploads")
+                ? `http://localhost:3000${userAvatar}`
+                : userAvatar
+            }
             alt={userName}
             className="w-10 h-10 rounded-full"
+            onError={(e) => {
+              e.target.src = "https://via.placeholder.com/40"; // Fallback on error
+            }}
           />
           <div>
             <p className="font-semibold text-gray-800">{userName}</p>
@@ -310,7 +315,7 @@ const Navbar = ({
                   placeholder="Search pets, services..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleSearch(e)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch(e)}
                   className="w-full pl-10 pr-4 py-3 bg-gray-50 border-0 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all"
                 />
               </div>
@@ -357,9 +362,16 @@ const Navbar = ({
                       className="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
                     >
                       <img
-                        src={userAvatar}
+                        src={
+                          userAvatar.startsWith("/uploads")
+                            ? `http://localhost:3000${userAvatar}`
+                            : userAvatar
+                        }
                         alt={userName}
                         className="w-8 h-8 rounded-full border-2 border-gray-200"
+                        onError={(e) => {
+                          e.target.src = "https://via.placeholder.com/40"; // Fallback on error
+                        }}
                       />
                       <ChevronDown className="h-4 w-4 text-gray-500 hidden sm:block" />
                     </button>
@@ -412,7 +424,7 @@ const Navbar = ({
                   placeholder="Search pets, services..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleSearch(e)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch(e)}
                   className="w-full pl-10 pr-4 py-2 bg-gray-50 border-0 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
@@ -456,9 +468,16 @@ const Navbar = ({
               <div className="px-4 py-3 border-t border-gray-100">
                 <div className="flex items-center space-x-3 mb-3">
                   <img
-                    src={userAvatar}
+                    src={
+                      userAvatar.startsWith("/uploads")
+                        ? `http://localhost:3000${userAvatar}`
+                        : userAvatar
+                    }
                     alt={userName}
                     className="w-10 h-10 rounded-full"
+                    onError={(e) => {
+                      e.target.src = "https://via.placeholder.com/40"; // Fallback on error
+                    }}
                   />
                   <div>
                     <p className="font-semibold text-gray-800">{userName}</p>
@@ -495,8 +514,6 @@ const Navbar = ({
           </div>
         </div>
       </nav>
-      {/* Spacer to offset fixed navbar height */}
-      <div aria-hidden="true" className="h-20" />
     </>
   );
 };

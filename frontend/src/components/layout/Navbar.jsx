@@ -321,10 +321,13 @@ const Navbar = ({
               {isAuthenticated ? (
                 <>
                   {/* Quick Actions */}
-                  <button className="hidden md:flex items-center px-4 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-sm font-medium hover:scale-105 transform transition-all cursor-pointer">
+                  <Link
+                    to="/create-post"
+                    className="hidden md:flex items-center px-4 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-sm font-medium hover:scale-105 transform transition-all cursor-pointer"
+                  >
                     <PlusCircle className="h-4 w-4 mr-1" />
                     Post Pet
-                  </button>
+                  </Link>
 
                   {/* Notifications */}
                   <NotificationDropdown />

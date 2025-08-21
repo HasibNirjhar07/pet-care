@@ -14,7 +14,8 @@ import { Avatar } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-const CreatePost = ({ isAuthenticated = true }) => {
+const CreatePost = ({ isAuthenticated = true, forceShowForm = false }) => {
+  // Added forceShowForm prop
   // State for user data
   const [userName, setUserName] = useState("");
   const [userAvatar, setUserAvatar] = useState("");
@@ -22,7 +23,7 @@ const CreatePost = ({ isAuthenticated = true }) => {
 
   // State for the post form
   const [postText, setPostText] = useState("");
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(forceShowForm); // Initialize showForm with forceShowForm
   const [petSource, setPetSource] = useState(""); // "my-pet" or "found-pet"
   const [selectedPet, setSelectedPet] = useState(""); // Stores the ID of the selected pet
   const [adoptionType, setAdoptionType] = useState("");
@@ -137,7 +138,10 @@ const CreatePost = ({ isAuthenticated = true }) => {
     setPetColor("");
     setFoundLocation("");
     setMyPets([]); // Reset fetched pets as well
-    setShowForm(false);
+    if (!forceShowForm) {
+      // Only reset showForm if not forced open
+      setShowForm(false);
+    }
   };
 
   const handlePostAdoption = async () => {
@@ -217,11 +221,11 @@ const CreatePost = ({ isAuthenticated = true }) => {
   };
 
   return (
-    <Card className="bg-white/90 backdrop-blur-md shadow-md border-none">
-      <CardContent className="p-4">
+    <Card className="bg-white/90 backdrop-blur-md shadow-xl rounded-2xl overflow-hidden">
+      <CardContent className="p-6 sm:p-8">
         {!showForm ? (
-          <div className="flex items-center gap-3">
-            <Avatar className="w-10 h-10">
+          <div className="flex items-center gap-4 py-2">
+            <Avatar className="w-12 h-12">
               {isAuthenticated && userAvatar ? (
                 <img
                   src={userAvatar}
@@ -229,8 +233,8 @@ const CreatePost = ({ isAuthenticated = true }) => {
                   className="w-full h-full rounded-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-purple-600 to-pink-500 text-white flex items-center justify-center">
-                  <User size={20} />
+                <div className="w-full h-full bg-gradient-to-br from-purple-600 to-pink-500 text-white flex items-center justify-center text-lg">
+                  <User size={24} />
                 </div>
               )}
             </Avatar>
@@ -243,15 +247,15 @@ const CreatePost = ({ isAuthenticated = true }) => {
                 }
               }}
               variant="outline"
-              className="w-full justify-start text-muted-foreground rounded-full bg-gray-100 hover:bg-gray-200"
+              className="flex-1 justify-start text-muted-foreground rounded-full bg-gray-100 hover:bg-gray-200 px-5 py-3 text-base"
             >
               Share a pet for adoption...
             </Button>
           </div>
         ) : (
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Avatar className="w-10 h-10">
+          <div className="space-y-6">
+            <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
+              <Avatar className="w-12 h-12">
                 {isAuthenticated && userAvatar ? (
                   <img
                     src={userAvatar}
@@ -259,142 +263,163 @@ const CreatePost = ({ isAuthenticated = true }) => {
                     className="w-full h-full rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-purple-600 to-pink-500 text-white flex items-center justify-center">
-                    <User size={20} />
+                  <div className="w-full h-full bg-gradient-to-br from-purple-600 to-pink-500 text-white flex items-center justify-center text-lg">
+                    <User size={24} />
                   </div>
                 )}
               </Avatar>
               <div>
-                <p className="text-sm font-semibold">Create Adoption Post</p>
-                <p className="text-xs text-muted-foreground">
+                <h2 className="text-xl font-bold text-gray-800">
+                  Create Adoption Post
+                </h2>
+                <p className="text-sm text-gray-500">
                   Help a pet find their forever home
                 </p>
               </div>
             </div>
 
             {/* Pet Source Selection */}
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">
+            <div className="space-y-4">
+              <Label className="text-base font-semibold text-gray-700">
                 What type of pet are you posting about?
               </Label>
-              <div className="flex gap-6">
-                <label className="flex items-center gap-2 cursor-pointer">
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
+                <label className="flex items-center gap-3 cursor-pointer p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex-1">
                   <input
                     type="radio"
                     name="petSource"
                     value="my-pet"
                     checked={petSource === "my-pet"}
                     onChange={(e) => setPetSource(e.target.value)}
-                    className="w-4 h-4 text-purple-600"
+                    className="w-5 h-5 text-purple-600 focus:ring-purple-500"
                   />
-                  <span className="text-sm">One of my pets</span>
+                  <span className="text-base text-gray-700">
+                    One of my pets
+                  </span>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="flex items-center gap-3 cursor-pointer p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex-1">
                   <input
                     type="radio"
                     name="petSource"
                     value="found-pet"
                     checked={petSource === "found-pet"}
                     onChange={(e) => setPetSource(e.target.value)}
-                    className="w-4 h-4 text-purple-600"
+                    className="w-5 h-5 text-purple-600 focus:ring-purple-500"
                   />
-                  <span className="text-sm">Found pet (stray/rescued)</span>
+                  <span className="text-base text-gray-700">
+                    Found pet (stray/rescued)
+                  </span>
                 </label>
               </div>
             </div>
 
             {/* Conditional Fields Based on Pet Source */}
-            {petSource === "my-pet" && (
-              <div className="space-y-4">
-                <div>
-                  <Label>Select Your Pet</Label>
-                  <Select onValueChange={setSelectedPet} value={selectedPet}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose from your pets" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {myPets.map((pet) => (
-                        <SelectItem key={pet._id} value={pet._id}>
-                          {" "}
-                          {/* Use _id for value */}
-                          {pet.name} - {pet.breed} ({pet.species})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            )}
-
-            {petSource === "found-pet" && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Pet Name (if known)</Label>
-                    <Input
-                      value={petName}
-                      onChange={(e) => setPetName(e.target.value)}
-                      placeholder="Unknown"
-                    />
-                  </div>
-                  <div>
-                    <Label>Species</Label>
-                    <Select onValueChange={setPetSpecies} value={petSpecies}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select species" />
+            {petSource && (
+              <div className="space-y-6 pt-4 border-t border-gray-100">
+                {petSource === "my-pet" && (
+                  <div className="space-y-2">
+                    <Label className="text-base font-semibold text-gray-700">
+                      Select Your Pet
+                    </Label>
+                    <Select onValueChange={setSelectedPet} value={selectedPet}>
+                      <SelectTrigger className="h-12 text-base">
+                        <SelectValue placeholder="Choose from your pets" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="dog">Dog</SelectItem>
-                        <SelectItem value="cat">Cat</SelectItem>
-                        <SelectItem value="bird">Bird</SelectItem>
-                        <SelectItem value="rabbit">Rabbit</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
+                        {myPets.map((pet) => (
+                          <SelectItem key={pet._id} value={pet._id}>
+                            {pet.name} - {pet.breed} ({pet.species})
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
-                  <div>
-                    <Label>Breed (if known)</Label>
-                    <Input
-                      value={petBreed}
-                      onChange={(e) => setPetBreed(e.target.value)}
-                      placeholder="Mixed/Unknown"
-                    />
-                  </div>
-                  <div>
-                    <Label>Estimated Age</Label>
-                    <Input
-                      value={petAge}
-                      onChange={(e) => setPetAge(e.target.value)}
-                      placeholder="e.g., 2 years, puppy, adult"
-                    />
-                  </div>
-                  <div>
-                    <Label>Color/Appearance</Label>
-                    <Input
-                      value={petColor}
-                      onChange={(e) => setPetColor(e.target.value)}
-                      placeholder="e.g., brown and white"
-                    />
-                  </div>
-                  <div>
-                    <Label>Found Location</Label>
-                    <Input
-                      value={foundLocation}
-                      onChange={(e) => setFoundLocation(e.target.value)}
-                      placeholder="Where did you find this pet?"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
+                )}
 
-            {/* Common Fields */}
-            {petSource && (
-              <>
-                <div>
-                  <Label>Adoption Type</Label>
+                {petSource === "found-pet" && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div>
+                      <Label className="text-base font-semibold text-gray-700">
+                        Pet Name (if known)
+                      </Label>
+                      <Input
+                        value={petName}
+                        onChange={(e) => setPetName(e.target.value)}
+                        placeholder="Unknown"
+                        className="h-12 text-base"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-base font-semibold text-gray-700">
+                        Species
+                      </Label>
+                      <Select onValueChange={setPetSpecies} value={petSpecies}>
+                        <SelectTrigger className="h-12 text-base">
+                          <SelectValue placeholder="Select species" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="dog">Dog</SelectItem>
+                          <SelectItem value="cat">Cat</SelectItem>
+                          <SelectItem value="bird">Bird</SelectItem>
+                          <SelectItem value="rabbit">Rabbit</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-base font-semibold text-gray-700">
+                        Breed (if known)
+                      </Label>
+                      <Input
+                        value={petBreed}
+                        onChange={(e) => setPetBreed(e.target.value)}
+                        placeholder="Mixed/Unknown"
+                        className="h-12 text-base"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-base font-semibold text-gray-700">
+                        Estimated Age
+                      </Label>
+                      <Input
+                        value={petAge}
+                        onChange={(e) => setPetAge(e.target.value)}
+                        placeholder="e.g., 2 years, puppy, adult"
+                        className="h-12 text-base"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-base font-semibold text-gray-700">
+                        Color/Appearance
+                      </Label>
+                      <Input
+                        value={petColor}
+                        onChange={(e) => setPetColor(e.target.value)}
+                        placeholder="e.g., brown and white"
+                        className="h-12 text-base"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-base font-semibold text-gray-700">
+                        Found Location
+                      </Label>
+                      <Input
+                        value={foundLocation}
+                        onChange={(e) => setFoundLocation(e.target.value)}
+                        placeholder="Where did you find this pet?"
+                        className="h-12 text-base"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Common Fields */}
+                <div className="space-y-2">
+                  <Label className="text-base font-semibold text-gray-700">
+                    Adoption Type
+                  </Label>
                   <Select onValueChange={setAdoptionType} value={adoptionType}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-12 text-base">
                       <SelectValue placeholder="Select Adoption Type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -402,43 +427,47 @@ const CreatePost = ({ isAuthenticated = true }) => {
                         Permanent Adoption
                       </SelectItem>
                       <SelectItem value="temporary">Temporary Care</SelectItem>
-                      {/* Removed Foster Care */}
                     </SelectContent>
                   </Select>
                 </div>
 
-                <Textarea
-                  value={postText}
-                  onChange={(e) => setPostText(e.target.value)}
-                  placeholder={
-                    petSource === "my-pet"
-                      ? "Tell potential adopters about your pet's personality, habits, and what kind of home would be perfect for them..."
-                      : "Describe the pet's condition when found, any medical care provided, temperament observed, and what kind of home they need..."
-                  }
-                  rows={4}
-                />
+                <div className="space-y-2">
+                  <Label className="text-base font-semibold text-gray-700">
+                    Description
+                  </Label>
+                  <Textarea
+                    value={postText}
+                    onChange={(e) => setPostText(e.target.value)}
+                    placeholder={
+                      petSource === "my-pet"
+                        ? "Tell potential adopters about your pet's personality, habits, and what kind of home would be perfect for them..."
+                        : "Describe the pet's condition when found, any medical care provided, temperament observed, and what kind of home they need..."
+                    }
+                    rows={5}
+                    className="min-h-[120px] text-base"
+                  />
+                </div>
 
-                <div className="flex justify-between items-center">
-                  <div className="flex gap-2">
+                <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                  <div className="flex gap-3">
                     <Button
                       variant="outline"
-                      size="sm"
-                      className="text-sm text-muted-foreground hover:bg-purple-100"
+                      size="lg"
+                      className="text-base text-muted-foreground hover:bg-purple-100 hover:text-purple-700 transition-colors rounded-full px-5"
                     >
-                      <Image size={16} className="mr-1" /> Photo
+                      <Image size={20} className="mr-2" /> Add Photo
                     </Button>
-                    {/* Removed Video Button */}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-3">
                     <Button
                       variant="outline"
                       onClick={resetForm}
-                      className="text-sm"
+                      className="text-base rounded-full px-5"
                     >
                       Cancel
                     </Button>
                     <Button
-                      className="bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:from-purple-700 hover:to-pink-600 text-sm"
+                      className="bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:from-purple-700 hover:to-pink-600 text-base rounded-full px-6 py-3 shadow-lg"
                       onClick={handlePostAdoption}
                       disabled={
                         !isAuthenticated || // Must be authenticated to post
@@ -449,11 +478,11 @@ const CreatePost = ({ isAuthenticated = true }) => {
                         (petSource === "found-pet" && !petSpecies)
                       }
                     >
-                      Post
+                      Post Adoption
                     </Button>
                   </div>
                 </div>
-              </>
+              </div>
             )}
           </div>
         )}

@@ -26,6 +26,7 @@ import Browse from "./pages/Adopt/browse.jsx";
 import Homes from "./pages/Adopt/homes.jsx";
 import Post from "./pages/Adopt/post";
 import Requests from "./pages/Adopt/requests.jsx";
+import NewAdoptionPostPage from "./pages/Adopt/NewAdoptionPostPage.jsx"; // Import NewAdoptionPostPage
 import { shopApi } from "./lib/api";
 import PurchaseHistory from "./pages/PurchaseHistory";
 // Placeholder components (replace with actual components when available)
@@ -203,6 +204,14 @@ const AppContent = ({ user, setUser, handleLogout }) => {
         <Route path="/adopt/homes" element={<Homes />} />
         <Route path="/adopt/post" element={<Post />} />
         <Route path="/adopt/requests" element={<Requests />} />
+        <Route
+          path="/create-post"
+          element={
+            <ProtectedRoute user={user}>
+              <NewAdoptionPostPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/vet"
           element={

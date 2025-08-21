@@ -7,7 +7,7 @@ import ScheduleMeetingModal from "@/components/ScheduleMeetingModal";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { usePostAPI } from "@/hooks/usePostAPI";
 import { PawPrint } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom"; // Added Link
 
 const Post = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -18,7 +18,8 @@ const Post = () => {
   // Modal states
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [showRequestsModal, setShowRequestsModal] = useState(false);
-  const [showScheduleMeetingModal, setShowScheduleMeetingModal] = useState(false);
+  const [showScheduleMeetingModal, setShowScheduleMeetingModal] =
+    useState(false);
 
   // Current data states
   const [currentPost, setCurrentPost] = useState(null);
@@ -33,7 +34,7 @@ const Post = () => {
     fetchAdoptionRequests,
     rejectRequest,
     scheduleMeeting,
-    completeDeal
+    completeDeal,
   } = usePostAPI();
 
   const loadPosts = async () => {
@@ -54,14 +55,16 @@ const Post = () => {
 
   // Check for viewRequests query parameter and auto-open modal
   useEffect(() => {
-    const viewRequestsParam = searchParams.get('viewRequests');
+    const viewRequestsParam = searchParams.get("viewRequests");
     if (viewRequestsParam && posts.length > 0) {
       // Find the post that matches the adoption ID
-      const targetPost = posts.find(post => post.adoptionId === viewRequestsParam);
+      const targetPost = posts.find(
+        (post) => post.adoptionId === viewRequestsParam
+      );
       if (targetPost) {
         handleViewRequests(viewRequestsParam);
         // Remove the query parameter after opening the modal
-        searchParams.delete('viewRequests');
+        searchParams.delete("viewRequests");
         setSearchParams(searchParams);
       }
     }
@@ -104,7 +107,8 @@ const Post = () => {
   };
 
   const handleRejectRequest = async (requestId) => {
-    if (!window.confirm("Are you sure you want to reject this request?")) return;
+    if (!window.confirm("Are you sure you want to reject this request?"))
+      return;
     try {
       await rejectRequest(requestId);
       await handleViewRequests(selectedPostForRequests);
@@ -174,9 +178,12 @@ const Post = () => {
             <p className="text-gray-500 mb-6">
               Create your first adoption post to get started!
             </p>
-            <button className="px-6 py-3 rounded-full bg-pink-500 hover:bg-pink-600 text-white font-medium shadow-md transition">
+            <Link
+              to="/create-post"
+              className="px-6 py-3 rounded-full bg-pink-500 hover:bg-pink-600 text-white font-medium shadow-md transition inline-block"
+            >
               + Create Post
-            </button>
+            </Link>
           </motion.div>
         ) : (
           <div className="">

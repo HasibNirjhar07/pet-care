@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
-import { Heart, MessageSquare, Share2, User } from "lucide-react";
+import {
+  Heart,
+  MessageSquare,
+  Share2,
+  User,
+  ChevronLeft,
+  ChevronRight,
+  Star,
+} from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
 const NewsfeedPost = ({ post }) => {
@@ -13,7 +21,177 @@ const NewsfeedPost = ({ post }) => {
   const [replyingTo, setReplyingTo] = useState(null);
   const [showLikedBy, setShowLikedBy] = useState(false);
 
+  // Favorite functionality
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  // Photo carousel state
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+
   const currentUserId = localStorage.getItem("userId");
+
+  // Create array of all photos (profile photo first, then additional photos)
+  const allPhotos = [];
+  if (post.profilePhoto) {
+    allPhotos.push(post.profilePhoto);
+  }
+  if (post.photos && post.photos.length > 0) {
+    // Get most recent 10 additional photos
+    const recentPhotos = post.photos.slice(-10).reverse();
+    allPhotos.push(...recentPhotos);
+  }
+
+  // Navigation functions for photo carousel
+  const nextPhoto = () => {
+    setCurrentPhotoIndex((prev) =>
+      prev === allPhotos.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const prevPhoto = () => {
+    setCurrentPhotoIndex((prev) =>
+      prev === 0 ? allPhotos.length - 1 : prev - 1
+    );
+  };
+
+  // Share function
+  const handleShare = async () => {
+    const shareData = {
+      title: `Adopt ${post.name || "this pet"}!`,
+      text: `Meet ${post.name || "this adorable pet"} - ${
+        post.adoptionDescription || "Looking for a loving home"
+      }`,
+      url: `${window.location.origin}/pet/${post.id || post._id}`,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(shareData.url);
+        alert("Link copied to clipboard!");
+      }
+    } catch (error) {
+      // Fallback: copy to clipboard
+      try {
+        await navigator.clipboard.writeText(shareData.url);
+        alert("Link copied to clipboard!");
+      } catch (clipboardError) {
+        console.error("Failed to share:", error);
+        alert("Failed to share. Please try again.");
+      }
+    }
+  };
+
+  // Favorite functionality
+  const handleFavorite = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+      const postId = post._id || post.id;
+
+      if (!token) {
+        alert("Please login to add favorites");
+        return;
+      }
+
+      if (isFavorite) {
+        // Remove from favorites
+        const response = await fetch(`http://localhost:3000/api/favorites/${postId}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          setIsFavorite(false);
+          // Update localStorage for backwards compatibility
+          const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+          const updatedFavorites = favorites.filter((id) => id !== postId);
+          localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+        } else {
+          const errorData = await response.json();
+          console.error("Remove favorite error:", errorData);
+          throw new Error(errorData.message || "Failed to remove from favorites");
+        }
+      } else {
+        // Add to favorites
+        const response = await fetch("http://localhost:3000/api/favorites", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ postId })
+        });
+
+        if (response.ok) {
+          setIsFavorite(true);
+          // Update localStorage for backwards compatibility
+          const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+          const updatedFavorites = [...favorites, postId];
+          localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+        } else {
+          const errorData = await response.json();
+          console.error("Add favorite error:", errorData);
+          if (response.status === 400 && errorData.message === "Post already in favorites") {
+            setIsFavorite(true);
+            return;
+          }
+          throw new Error(errorData.message || "Failed to add to favorites");
+        }
+      }
+
+      // Dispatch custom event to notify other components
+      window.dispatchEvent(new CustomEvent("favoritesChanged"));
+    } catch (error) {
+      console.error("Error handling favorite:", error);
+      alert("Failed to update favorites. Please try again.");
+    }
+  };
+
+  // Check if post is favorited on mount
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      try {
+        const userId = localStorage.getItem("userId");
+        const postId = post._id || post.id;
+        
+        if (!userId || !postId) return;
+
+        const response = await fetch(`http://localhost:3000/api/favorites/check/${postId}?userId=${userId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setIsFavorite(data.isFavorited);
+        } else {
+          // Fallback to localStorage
+          const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+          setIsFavorite(favorites.includes(postId));
+        }
+      } catch (error) {
+        console.error("Error checking favorite status:", error);
+        // Fallback to localStorage
+        const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+        const postId = post._id || post.id;
+        setIsFavorite(favorites.includes(postId));
+      }
+    };
+
+    checkFavoriteStatus();
+  }, [post._id, post.id]);
+
+  // Reset photo index when post changes
+  useEffect(() => {
+    setCurrentPhotoIndex(0);
+  }, [post._id]);
 
   // Initialize like state and comment count on component mount
   useEffect(() => {
@@ -209,18 +387,24 @@ const NewsfeedPost = ({ post }) => {
       {/* Header */}
       <div className="flex items-center justify-between p-4 pb-3">
         <div className="flex items-center space-x-3">
-          <img
-            src={
-              post.user?.avatar ||
-              "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face"
-            }
-            alt={post.user?.name || "User"}
-            className="w-12 h-12 rounded-full object-cover"
-            onError={(e) => {
-              e.target.src =
-                "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face";
-            }}
-          />
+          {post.user?.avatar ? (
+            <img
+              src={post.user.avatar}
+              alt={post.user?.name || "User"}
+              className="w-12 h-12 rounded-full object-cover"
+              onError={(e) => {
+                e.target.style.display = "none";
+                e.target.nextElementSibling.style.display = "flex";
+              }}
+            />
+          ) : null}
+          <div
+            className={`w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center ${
+              post.user?.avatar ? "hidden" : ""
+            }`}
+          >
+            <User size={24} className="text-gray-600" />
+          </div>
           <div>
             <h3 className="font-semibold text-gray-900">
               {post.user?.name || "Unknown User"}
@@ -233,50 +417,113 @@ const NewsfeedPost = ({ post }) => {
             </p>
           </div>
         </div>
-        <span
-          className={`text-xs font-medium px-3 py-1 rounded-full ${
-            post.status === "Available"
-              ? "bg-green-100 text-green-800"
-              : "bg-orange-100 text-orange-800"
+        <button
+          onClick={handleFavorite}
+          className={`flex items-center justify-center text-xs font-medium p-2 rounded-full border transition-colors ${
+            isFavorite
+              ? "bg-rose-100 text-rose-600 border-rose-300 hover:bg-rose-200"
+              : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200"
           }`}
         >
-          {post.status}
-        </span>
+          <Star size={16} className={isFavorite ? "fill-current" : ""} />
+        </button>
       </div>
-
-      {/* Pet Image */}
+      {/* Pet Image Carousel */}
       <Link to={`/pet/${post.id}`}>
         <div className="relative">
-          <img
-            src={
-              post.pet?.image ||
-              "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=800&h=600&fit=crop&crop=center"
-            }
-            alt={post.pet?.name || "Pet"}
-            className="w-full h-80 object-cover"
-            onError={(e) => {
-              e.target.src =
-                "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=800&h=600&fit=crop&crop=center";
-            }}
-          />
-          <div className="absolute top-4 left-4 bg-black bg-opacity-70 text-white text-xs px-3 py-1 rounded-full">
-            {post.pet?.adoptionType || "Regular"} Adoption
-          </div>
-        </div>
-      </Link>
+          {allPhotos.length > 0 ? (
+            <>
+              <img
+                src={`http://localhost:3000${allPhotos[currentPhotoIndex]}`}
+                alt={`${post.name || "Pet"} - Photo ${currentPhotoIndex + 1}`}
+                className="w-full h-96 max-h-96 object-cover"
+                onError={(e) => {
+                  e.target.src =
+                    "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=800&h=600&fit=crop&crop=center";
+                }}
+              />
 
+              {/* Photo counter */}
+              {allPhotos.length > 1 && (
+                <div className="absolute top-4 right-4 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded-full">
+                  {currentPhotoIndex + 1}/{allPhotos.length}
+                </div>
+              )}
+
+              {/* Navigation arrows */}
+              {allPhotos.length > 1 && (
+                <>
+                  {/* Left arrow - only show if not at first photo */}
+                  {currentPhotoIndex > 0 && (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        prevPhoto();
+                      }}
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-full flex items-center justify-center transition-all duration-300"
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                  )}
+                  {/* Right arrow - only show if not at last photo */}
+                  {currentPhotoIndex < allPhotos.length - 1 && (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        nextPhoto();
+                      }}
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-full flex items-center justify-center transition-all duration-300"
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                  )}
+                </>
+              )}
+
+              {/* Photo indicators */}
+              {allPhotos.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-1">
+                  {allPhotos.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setCurrentPhotoIndex(index);
+                      }}
+                      className={`w-2 h-2 rounded-full transition-all ${
+                        index === currentPhotoIndex
+                          ? "bg-white"
+                          : "bg-white bg-opacity-50"
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <img
+              src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=800&h=600&fit=crop&crop=center"
+              alt={post.name || "Pet"}
+              className="w-full h-96 max-h-96 object-cover"
+            />
+          )}
+        </div>
+      </Link>{" "}
       {/* Pet Info */}
       <div className="p-4">
         <div className="flex justify-between items-start mb-4">
           <h2 className="text-xl font-bold text-gray-900">
-            Meet {post.pet?.name || "Unknown Pet"}!
+            Meet {post.name || "Unknown Pet"}!
           </h2>
           <div className="text-right">
             <p className="text-sm font-medium text-gray-600">
-              {post.pet?.type || "Unknown Type"}
+              {post.species || "Unknown Type"}
             </p>
             <p className="text-sm text-gray-500">
-              {post.pet?.breed || "Unknown Breed"}
+              {post.breed || "Unknown Breed"}
             </p>
           </div>
         </div>
@@ -285,26 +532,44 @@ const NewsfeedPost = ({ post }) => {
           <div>
             <p className="text-sm text-gray-700">
               <span className="font-medium">Age:</span>{" "}
-              {post.pet?.age || "Unknown"}
+              {post.dateOfBirth
+                ? Math.floor(
+                    (new Date() - new Date(post.dateOfBirth)) /
+                      (365.25 * 24 * 60 * 60 * 1000)
+                  ) + " years"
+                : "Unknown"}
             </p>
             <p className="text-sm text-gray-700 mt-2">
-              <span className="font-medium">Medical:</span>{" "}
-              {post.pet?.medicalHistory || "No medical history available"}
+              <span className="font-medium">Medical records:</span>{" "}
+              {post.healthRecords?.length > 0
+                ? post.healthRecords[0]
+                : "No medical history available"}
             </p>
           </div>
           <div>
             <p className="text-sm text-gray-700">
               <span className="font-medium">Personality:</span>{" "}
-              {post.pet?.personality?.text || "Friendly"}
+              {post.traits?.join(", ") || "Friendly"}
             </p>
-            {post.pet?.adoptionType === "temporary" && post.pet?.returnDate && (
+            <p className="text-sm text-gray-700 mt-2">
+              <span className="font-medium">Adoption Type:</span>{" "}
+              {post.adoptionType || "Regular"} Adoption
+            </p>
+            {post.adoptionType === "temporary" && post.returnDate && (
               <p className="text-sm text-gray-700 mt-2">
                 <span className="font-medium">Return Date:</span>{" "}
-                {new Date(post.pet.returnDate).toLocaleDateString()}
+                {new Date(post.returnDate).toLocaleDateString()}
               </p>
             )}
           </div>
         </div>
+
+        {/* Adoption Description */}
+        {post.adoptionDescription && (
+          <div className="mb-4">
+            <p className="text-sm text-gray-800">{post.adoptionDescription}</p>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="border-t border-gray-200 pt-4 flex justify-between items-center">
@@ -336,7 +601,10 @@ const NewsfeedPost = ({ post }) => {
               <span>{commentCount}</span>
             </button>
 
-            <button className="flex items-center space-x-2 text-sm text-gray-500 hover:text-green-500 transition-colors">
+            <button
+              onClick={handleShare}
+              className="flex items-center space-x-2 text-sm text-gray-500 hover:text-green-500 transition-colors"
+            >
               <Share2 size={20} />
               <span>Share</span>
             </button>
@@ -404,8 +672,8 @@ const NewsfeedPost = ({ post }) => {
               </div>
             ))}
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
-                <User size={16} className="text-white" />
+              <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                <User size={16} className="text-gray-600" />
               </div>
               <input
                 type="text"
@@ -426,7 +694,7 @@ const NewsfeedPost = ({ post }) => {
                 disabled={!comment.trim()}
                 className="bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Post
+                Comment
               </button>
             </div>
           </div>

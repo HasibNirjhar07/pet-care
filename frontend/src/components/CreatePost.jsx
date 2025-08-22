@@ -716,8 +716,7 @@ const CreatePost = ({
                 </div>
 
                 <div className="flex justify-between items-center pt-4 border-t border-gray-100">
-                  <div className="flex gap-3">
-                  </div>
+                  <div className="flex gap-3"></div>
                   <div className="flex gap-3">
                     <Button
                       variant="outline"

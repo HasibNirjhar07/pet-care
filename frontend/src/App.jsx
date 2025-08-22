@@ -3,6 +3,7 @@ import LandingPage from "./pages/LandingPage/LandingPage";
 import SignInPage from "./pages/Auth/Login";
 import SignUpPage from "./pages/Auth/SignUp";
 import Dashboard from "./pages/Dashboard/Home";
+import Favorites from "./pages/Dashboard/Favorites";
 import Navbar from "./components/layout/Navbar";
 import Profile from "./pages/Profile";
 import PetProfile from "./pages/Pet/PetProfile";
@@ -101,6 +102,7 @@ const AppContent = ({ user, setUser, handleLogout }) => {
 
   const getCurrentPage = (pathname) => {
     if (pathname === "/dashboard") return "home";
+    if (pathname === "/favorites") return "favorites";
     if (pathname.startsWith("/adopt")) return "adopt";
     if (pathname.startsWith("/care")) return "care";
     if (pathname.startsWith("/shop")) return "shop";
@@ -121,7 +123,15 @@ const AppContent = ({ user, setUser, handleLogout }) => {
           path="/dashboard"
           element={
             <ProtectedRoute user={user}>
-              <Dashboard />
+              <Dashboard user={user} onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/favorites"
+          element={
+            <ProtectedRoute user={user}>
+              <Favorites user={user} onLogout={handleLogout} />
             </ProtectedRoute>
           }
         />

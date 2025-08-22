@@ -19,6 +19,7 @@ const Dashboard = ({ user, onLogout }) => {
       });
       if (!res.ok) throw new Error("Failed to fetch available pets");
       const data = await res.json();
+      console.log("Raw pet data:", data); // Debug log
       const formattedPosts = data.map((pet) => ({
         id: pet._id,
         adoptionId: pet.adoptionId,
@@ -30,28 +31,23 @@ const Dashboard = ({ user, onLogout }) => {
             : "https://ui-avatars.com/api/?name=Pet&background=random",
           location: pet.postedBy?.location || "Unknown",
         },
-        pet: {
-          name: pet.name,
-          type: pet.species,
-          breed: pet.breed,
-          age: `${
-            new Date().getFullYear() - new Date(pet.dateOfBirth).getFullYear()
-          } years`,
-          image: `http://localhost:3000${pet.profilePhoto}`,
-          adoptionType: pet.adoptionType,
-          returnDate: pet.adoptionType === "temporary" ? pet.returnDate : null,
-          medicalHistory: Array.isArray(pet.healthRecords)
-            ? pet.healthRecords.join(", ")
-            : pet.healthRecords || "No medical history",
-          personality: {
-            text: Array.isArray(pet.traits)
-              ? pet.traits.join(", ")
-              : pet.traits || "Friendly",
-            style: { display: "flex", justifyContent: "flex-end" },
-          },
-        },
+        // Pet data directly at post level for NewsFeedPost
+        name: pet.name,
+        species: pet.species,
+        breed: pet.breed,
+        dateOfBirth: pet.dateOfBirth,
+        color: pet.color,
+        description: pet.description,
+        healthRecords: pet.healthRecords,
+        traits: pet.traits,
+        profilePhoto: pet.profilePhoto,
+        photos: pet.photos,
+        adoptionType: pet.adoptionType,
+        returnDate: pet.adoptionType === "temporary" ? pet.returnDate : null,
+        adoptionDescription: pet.adoptionDescription,
         timestamp: new Date(pet.createdAt).toLocaleString(),
         likes: pet.likes || 0,
+        likedBy: pet.likedBy || [],
         comments: pet.comments || [],
         status: pet.status,
       }));

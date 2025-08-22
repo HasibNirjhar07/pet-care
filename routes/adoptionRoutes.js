@@ -2,8 +2,11 @@
 const express = require("express");
 const router = express.Router();
 const { jwtVerification } = require('../middlewares/authMiddleware');
+const uploadCreate = require('../middlewares/uploadCreateHandler'); // Add upload middleware
 const { 
     postAdoptionRequest, 
+    postFoundPetForAdoption, // NEW: Handle found pets
+    addPhotosToAdoptionPet, // NEW: Add photos to existing pets
     getAvailablePets, 
     commentOnAdoption, 
     requestAdoption, 
@@ -31,6 +34,18 @@ router.put("/:adoptionId", jwtVerification, updateAdoptionPost);
 
 // Post an adoption request
 router.post("/post", jwtVerification, postAdoptionRequest);
+
+// NEW: Post a found pet for adoption (creates pet profile + adoption post) with photo uploads
+router.post("/post-found-pet", jwtVerification, uploadCreate.fields([
+    { name: 'profilePhoto', maxCount: 1 },
+    { name: 'photos', maxCount: 10 }
+]), postFoundPetForAdoption);
+
+// NEW: Add photos to existing pet for adoption
+router.post("/add-photos/:petId", jwtVerification, uploadCreate.fields([
+    { name: 'profilePhoto', maxCount: 1 },
+    { name: 'photos', maxCount: 10 }
+]), addPhotosToAdoptionPet);
 
 // Get available pets for adoption
 router.get("/pets", jwtVerification, getAvailablePets);

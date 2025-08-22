@@ -14,7 +14,11 @@ import { Avatar } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-const CreatePost = ({ isAuthenticated = true, forceShowForm = false }) => {
+const CreatePost = ({
+  isAuthenticated = true,
+  forceShowForm = false,
+  onPostCreated,
+}) => {
   // Added forceShowForm prop
   // State for user data
   const [userName, setUserName] = useState("");
@@ -36,6 +40,12 @@ const CreatePost = ({ isAuthenticated = true, forceShowForm = false }) => {
   const [petColor, setPetColor] = useState("");
   const [foundLocation, setFoundLocation] = useState("");
   const [returnDate, setReturnDate] = useState(""); // New state for return date
+
+  // Photo states
+  const [profilePhoto, setProfilePhoto] = useState(null);
+  const [additionalPhotos, setAdditionalPhotos] = useState([]);
+  const [profilePhotoPreview, setProfilePhotoPreview] = useState(null);
+  const [additionalPhotosPreview, setAdditionalPhotosPreview] = useState([]);
 
   // Fetch user data (name and avatar)
   useEffect(() => {
@@ -143,11 +153,45 @@ const CreatePost = ({ isAuthenticated = true, forceShowForm = false }) => {
     setPetColor("");
     setFoundLocation("");
     setReturnDate(""); // Reset return date
+    setProfilePhoto(null);
+    setAdditionalPhotos([]);
+    setProfilePhotoPreview(null);
+    setAdditionalPhotosPreview([]);
     setMyPets([]); // Reset fetched pets as well
     if (!forceShowForm) {
       // Only reset showForm if not forced open
       setShowForm(false);
     }
+  };
+
+  // Photo handling functions
+  const handleProfilePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setProfilePhoto(file);
+      const reader = new FileReader();
+      reader.onload = (e) => setProfilePhotoPreview(e.target.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAdditionalPhotosChange = (e) => {
+    const files = Array.from(e.target.files);
+    setAdditionalPhotos((prev) => [...prev, ...files]);
+
+    // Create previews
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setAdditionalPhotosPreview((prev) => [...prev, e.target.result]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeAdditionalPhoto = (index) => {
+    setAdditionalPhotos((prev) => prev.filter((_, i) => i !== index));
+    setAdditionalPhotosPreview((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handlePostAdoption = async () => {
@@ -156,79 +200,157 @@ const CreatePost = ({ isAuthenticated = true, forceShowForm = false }) => {
       return;
     }
 
-    if (!postText || !petSource || !adoptionType) {
-      alert(
-        "Please fill in all required fields: Post text, Pet source, and Adoption type."
-      );
+    // Different validation for different pet sources
+    if (petSource === "my-pet") {
+      if (!postText || !adoptionType) {
+        alert(
+          "Please fill in all required fields: Post text and Adoption type."
+        );
+        return;
+      }
+      if (adoptionType === "temporary" && !returnDate) {
+        alert("Please provide a return date for temporary adoption.");
+        return;
+      }
+      if (!selectedPet) {
+        alert("Please select your pet.");
+        return;
+      }
+    } else if (petSource === "found-pet") {
+      if (!postText || !petSpecies) {
+        alert("Please fill in all required fields: Post text and Pet species.");
+        return;
+      }
+      if (!profilePhoto) {
+        alert("Please upload a profile picture for the found pet.");
+        return;
+      }
+    } else {
+      alert("Please select a pet source (your pet or found pet).");
       return;
     }
+
     // Ensure postText is not just whitespace
     if (!postText.trim()) {
       alert("Please provide a description for the adoption post.");
       return;
     }
 
-    if (adoptionType === "temporary" && !returnDate) {
-      alert("Please provide a return date for temporary adoption.");
-      return;
-    }
-
-    if (petSource === "my-pet" && !selectedPet) {
-      alert("Please select your pet.");
-      return;
-    }
-
-    if (petSource === "found-pet" && !petSpecies) {
-      alert("Please specify the species of the found pet.");
-      return;
-    }
-
     try {
       const token = localStorage.getItem("token");
-      // Token check is already done by isAuthenticated check above, but good for safety.
       if (!token) {
         alert("Authentication token missing. Please log in.");
         return;
       }
 
-      const payload = {
-        adoptionDescription: postText,
-        adoptionType,
+      let endpoint = "http://localhost:3000/adoption/post";
+      let requestBody;
+      let headers = {
+        Authorization: `Bearer ${token}`,
       };
 
-      if (adoptionType === "temporary") {
-        payload.returnDate = returnDate;
-      }
-
       if (petSource === "my-pet") {
-        payload.petId = selectedPet;
+        // First create the adoption post
+        headers["Content-Type"] = "application/json";
+        requestBody = JSON.stringify({
+          adoptionDescription: postText,
+          adoptionType,
+          returnDate: adoptionType === "temporary" ? returnDate : undefined,
+          petId: selectedPet,
+        });
+
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: headers,
+          body: requestBody,
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(
+            `HTTP error! status: ${response.status}, message: ${errorText}`
+          );
+        }
+
+        const result = await response.json();
+
+        // If there are additional photos, upload them separately
+        if (additionalPhotos.length > 0) {
+          const photoFormData = new FormData();
+          additionalPhotos.forEach((photo) => {
+            photoFormData.append("photos", photo);
+          });
+
+          const photoResponse = await fetch(
+            `http://localhost:3000/adoption/add-photos/${selectedPet}`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+              body: photoFormData,
+            }
+          );
+
+          if (!photoResponse.ok) {
+            console.warn(
+              "Failed to upload additional photos, but adoption post was created successfully."
+            );
+          }
+        }
+
+        alert("Adoption post created successfully!");
+        resetForm();
+        if (onPostCreated) {
+          onPostCreated();
+        }
+        return;
       } else if (petSource === "found-pet") {
-        payload.petName = petName || "Unknown";
-        payload.petSpecies = petSpecies;
-        payload.petBreed = petBreed || "Unknown";
-        payload.petAge = petAge || "Unknown";
-        payload.petColor = petColor || "Unknown";
-        payload.foundLocation = foundLocation || "Unknown";
+        // For found pets, use FormData for file uploads
+        endpoint = "http://localhost:3000/adoption/post-found-pet";
+        const formData = new FormData();
+
+        formData.append("adoptionDescription", postText);
+        formData.append("petName", petName || "Found Pet");
+        formData.append("petSpecies", petSpecies);
+        formData.append("petBreed", petBreed || "Unknown");
+        formData.append("petAge", petAge || "Unknown");
+        formData.append("petColor", petColor || "Unknown");
+        formData.append("foundLocation", foundLocation || "Unknown");
+
+        // Add photos if selected
+        if (profilePhoto) {
+          formData.append("profilePhoto", profilePhoto);
+        }
+
+        additionalPhotos.forEach((photo, index) => {
+          formData.append("photos", photo);
+        });
+
+        requestBody = formData;
+        // Don't set Content-Type for FormData, let the browser set it
+
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: headers,
+          body: requestBody,
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(
+            `HTTP error! status: ${response.status}, message: ${errorText}`
+          );
+        }
+
+        const result = await response.json();
+        alert("Adoption post created successfully!");
+        resetForm();
+        if (onPostCreated) {
+          onPostCreated();
+        }
+        return;
       }
-
-      const response = await fetch("http://localhost:3000/adoption/post", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `HTTP error! status: ${response.status}, message: ${errorText}`
-        );
-      }
-
-      alert("Adoption post created successfully!");
-      resetForm(); // Reset form after successful submission
     } catch (error) {
       console.error("Error creating adoption post:", error);
       alert(`Failed to create adoption post: ${error.message}`);
@@ -433,38 +555,148 @@ const CreatePost = ({ isAuthenticated = true, forceShowForm = false }) => {
                   </div>
                 )}
 
-                {/* Common Fields */}
-                <div className="space-y-2">
-                  <Label className="text-base font-semibold text-gray-700">
-                    Adoption Type
-                  </Label>
-                  <Select onValueChange={setAdoptionType} value={adoptionType}>
-                    <SelectTrigger className="h-12 text-base">
-                      <SelectValue placeholder="Select Adoption Type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="permanent">
-                        Permanent Adoption
-                      </SelectItem>
-                      <SelectItem value="temporary">Temporary Care</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                {/* Adoption Type - Only for my pets */}
+                {petSource === "my-pet" && (
+                  <>
+                    <div className="space-y-2">
+                      <Label className="text-base font-semibold text-gray-700">
+                        Adoption Type
+                      </Label>
+                      <Select
+                        onValueChange={setAdoptionType}
+                        value={adoptionType}
+                      >
+                        <SelectTrigger className="h-12 text-base">
+                          <SelectValue placeholder="Select Adoption Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="permanent">
+                            Permanent Adoption
+                          </SelectItem>
+                          <SelectItem value="temporary">
+                            Temporary Care
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                {/* Return Date for Temporary Adoption */}
-                {adoptionType === "temporary" && (
-                  <div className="space-y-2">
-                    <Label className="text-base font-semibold text-gray-700">
-                      Return Date
-                    </Label>
-                    <Input
-                      type="date"
-                      value={returnDate}
-                      onChange={(e) => setReturnDate(e.target.value)}
-                      className="h-12 text-base w-fit"
-                    />
-                  </div>
+                    {/* Return Date for Temporary Adoption */}
+                    {adoptionType === "temporary" && (
+                      <div className="space-y-2">
+                        <Label className="text-base font-semibold text-gray-700">
+                          Return Date
+                        </Label>
+                        <Input
+                          type="date"
+                          value={returnDate}
+                          onChange={(e) => setReturnDate(e.target.value)}
+                          className="h-12 text-base w-fit"
+                        />
+                      </div>
+                    )}
+                  </>
                 )}
+
+                {/* Photo Upload Section */}
+                <div className="space-y-4">
+                  <Label className="text-base font-semibold text-gray-700">
+                    Pet Photos
+                  </Label>
+
+                  {/* Profile Photo - Only for found pets */}
+                  {petSource === "found-pet" && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-600">
+                        Profile Photo *
+                      </Label>
+                      <div className="flex items-center gap-4">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleProfilePhotoChange}
+                          className="hidden"
+                          id="profile-photo-upload"
+                        />
+                        <label
+                          htmlFor="profile-photo-upload"
+                          className="flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg cursor-pointer hover:bg-purple-200 transition-colors"
+                        >
+                          <Camera size={16} />
+                          Choose Profile Photo
+                        </label>
+                        {profilePhotoPreview && (
+                          <div className="relative">
+                            <img
+                              src={profilePhotoPreview}
+                              alt="Profile preview"
+                              className="w-16 h-16 object-cover rounded-lg"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setProfilePhoto(null);
+                                setProfilePhotoPreview(null);
+                              }}
+                              className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Additional Photos - For all pet sources */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-gray-600">
+                      {petSource === "my-pet"
+                        ? "Add Photos to Pet's Gallery"
+                        : "Additional Photos"}
+                    </Label>
+                    <div className="space-y-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleAdditionalPhotosChange}
+                        className="hidden"
+                        id="additional-photos-upload"
+                      />
+                      <label
+                        htmlFor="additional-photos-upload"
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg cursor-pointer hover:bg-blue-200 transition-colors w-fit"
+                      >
+                        <Image size={16} />
+                        {petSource === "my-pet"
+                          ? "Add Photos"
+                          : "Add More Photos"}
+                      </label>
+
+                      {/* Photo Previews */}
+                      {additionalPhotosPreview.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {additionalPhotosPreview.map((preview, index) => (
+                            <div key={index} className="relative">
+                              <img
+                                src={preview}
+                                alt={`Preview ${index + 1}`}
+                                className="w-16 h-16 object-cover rounded-lg"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeAdditionalPhoto(index)}
+                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
 
                 <div className="space-y-2">
                   <Label className="text-base font-semibold text-gray-700">
@@ -485,13 +717,6 @@ const CreatePost = ({ isAuthenticated = true, forceShowForm = false }) => {
 
                 <div className="flex justify-between items-center pt-4 border-t border-gray-100">
                   <div className="flex gap-3">
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="text-base text-muted-foreground hover:bg-purple-100 hover:text-purple-700 transition-colors rounded-full px-5"
-                    >
-                      <Image size={20} className="mr-2" /> Add Photo
-                    </Button>
                   </div>
                   <div className="flex gap-3">
                     <Button

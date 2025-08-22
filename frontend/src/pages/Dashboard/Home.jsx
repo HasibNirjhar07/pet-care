@@ -9,64 +9,69 @@ const Dashboard = ({ user, onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchAvailablePets = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:3000/adoption/pets", {
-          headers: {
-            Authorization: `Bearer ${token}`,
+  const fetchAvailablePets = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:3000/adoption/pets", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) throw new Error("Failed to fetch available pets");
+      const data = await res.json();
+      const formattedPosts = data.map((pet) => ({
+        id: pet._id,
+        adoptionId: pet.adoptionId,
+        postedBy: pet.postedBy,
+        user: {
+          name: pet.postedBy?.name || "Unknown User",
+          avatar: pet.postedBy?.profilePhoto
+            ? `http://localhost:3000${pet.postedBy?.profilePhoto}`
+            : "https://ui-avatars.com/api/?name=Pet&background=random",
+          location: pet.postedBy?.location || "Unknown",
+        },
+        pet: {
+          name: pet.name,
+          type: pet.species,
+          breed: pet.breed,
+          age: `${
+            new Date().getFullYear() - new Date(pet.dateOfBirth).getFullYear()
+          } years`,
+          image: `http://localhost:3000${pet.profilePhoto}`,
+          adoptionType: pet.adoptionType,
+          returnDate: pet.adoptionType === "temporary" ? pet.returnDate : null,
+          medicalHistory: Array.isArray(pet.healthRecords)
+            ? pet.healthRecords.join(", ")
+            : pet.healthRecords || "No medical history",
+          personality: {
+            text: Array.isArray(pet.traits)
+              ? pet.traits.join(", ")
+              : pet.traits || "Friendly",
+            style: { display: "flex", justifyContent: "flex-end" },
           },
-        });
-        if (!res.ok) throw new Error("Failed to fetch available pets");
-        const data = await res.json();
-        const formattedPosts = data.map((pet) => ({
-          id: pet._id,
-          adoptionId: pet.adoptionId,
-          postedBy: pet.postedBy,
-          user: {
-            name: pet.postedBy?.name || "Unknown User",
-            avatar: pet.postedBy?.profilePhoto
-              ? `http://localhost:3000${pet.postedBy?.profilePhoto}`
-              : "https://ui-avatars.com/api/?name=Pet&background=random",
-            location: pet.postedBy?.location || "Unknown",
-          },
-          pet: {
-            name: pet.name,
-            type: pet.species,
-            breed: pet.breed,
-            age: `${
-              new Date().getFullYear() - new Date(pet.dateOfBirth).getFullYear()
-            } years`,
-            image: `http://localhost:3000${pet.profilePhoto}`,
-            adoptionType: pet.adoptionType,
-            returnDate:
-              pet.adoptionType === "temporary" ? pet.returnDate : null,
-            medicalHistory: Array.isArray(pet.healthRecords)
-              ? pet.healthRecords.join(", ")
-              : pet.healthRecords || "No medical history",
-            personality: {
-              text: Array.isArray(pet.traits)
-                ? pet.traits.join(", ")
-                : pet.traits || "Friendly",
-              style: { display: "flex", justifyContent: "flex-end" },
-            },
-          },
-          timestamp: new Date(pet.createdAt).toLocaleString(),
-          likes: pet.likes || 0,
-          comments: pet.comments || [],
-          status: pet.status,
-        }));
-        setPosts(formattedPosts);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+        },
+        timestamp: new Date(pet.createdAt).toLocaleString(),
+        likes: pet.likes || 0,
+        comments: pet.comments || [],
+        status: pet.status,
+      }));
+      setPosts(formattedPosts);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchAvailablePets();
   }, []);
+
+  // Function to refresh posts - can be called by CreatePost component
+  const refreshPosts = async () => {
+    setLoading(true);
+    await fetchAvailablePets();
+  };
 
   if (loading) return <div>Loading...</div>;
 
@@ -90,7 +95,7 @@ const Dashboard = ({ user, onLogout }) => {
 
           {/* Main Content - Newsfeed */}
           <div className="lg:col-span-2 space-y-6">
-            <CreatePost />
+            <CreatePost onPostCreated={refreshPosts} />
 
             <div className="space-y-6">
               {posts.map((post) => (

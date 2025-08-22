@@ -21,20 +21,18 @@ const Sidebar = () => {
 
   const menuItems = [
     { icon: <Home size={16} />, label: "Feed", path: "/dashboard" },
-    {
-      icon: <Users size={16} />,
-      label: "Adoption Homes",
-      path: "/adoption-homes",
-    },
     { icon: <Star size={16} />, label: "Favorites", path: "/favorites" },
     { icon: <Camera size={16} />, label: "My Posts", path: "/my-posts" },
+    {
+      icon: <Heart size={16} />,
+      label: "View Adoption Requests",
+      path: "/adopt/post",
+    },
     {
       icon: <Bell size={16} />,
       label: "Notifications",
       path: "/notifications",
     },
-    { icon: <User size={16} />, label: "Profile", path: "/profile" },
-    { icon: <Settings size={16} />, label: "Settings", path: "/settings" },
   ];
 
   const handleNavigation = (path) => {

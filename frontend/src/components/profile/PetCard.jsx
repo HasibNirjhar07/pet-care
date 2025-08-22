@@ -1,8 +1,71 @@
-import { Dog, Cat, Edit, Eye } from "lucide-react";
+import { Dog, Cat, Edit, Eye, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 const PetCard = ({ pet, setSelectedPet, onCardClick }) => {
+  const navigate = useNavigate();
+  const [adoptionData, setAdoptionData] = useState(null);
+  const [requestCount, setRequestCount] = useState(0);
+
+  // Fetch adoption data and request count for this pet
+  useEffect(() => {
+    const fetchAdoptionData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token || pet.status !== "Available") return;
+
+        // First, get all available pets to find the adoption post for this pet
+        const response = await fetch("http://localhost:3000/adoption/pets", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const adoptionPost = data.find((p) => p._id === pet._id);
+
+          if (adoptionPost && adoptionPost.adoptionId) {
+            setAdoptionData(adoptionPost);
+
+            // Fetch adoption requests for this adoption post
+            try {
+              const requestsResponse = await fetch(
+                `http://localhost:3000/adoption/${adoptionPost.adoptionId}/requests`,
+                {
+                  method: "GET",
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                  },
+                }
+              );
+
+              if (requestsResponse.ok) {
+                const requestsData = await requestsResponse.json();
+                setRequestCount(requestsData.length || 0);
+              }
+            } catch (error) {
+              console.error("Error fetching adoption requests:", error);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching adoption data:", error);
+      }
+    };
+
+    fetchAdoptionData();
+  }, [pet._id, pet.status]);
+
+  const handleViewRequests = () => {
+    // Navigate to the adopt/post page (same as sidebar navigation)
+    navigate("/adopt/post");
+  };
+
   // Function to get the image URL
   const getImageUrl = () => {
     if (pet.profilePhoto) {
@@ -89,23 +152,27 @@ const PetCard = ({ pet, setSelectedPet, onCardClick }) => {
             </span>
           ))}
         </div>
-        <div className="flex gap-2">
-          <Button
-            onClick={() => setSelectedPet?.({ ...pet })}
-            className="w-full flex items-center justify-center gap-2"
-          >
-            <Edit className="w-4 h-4" />
-            Edit Details
-          </Button>
+        <div className="flex flex-col gap-2">
           <Link to={`/pet/${pet._id || pet.id}`} className="w-full">
             <Button
               variant="outline"
               className="w-full flex items-center justify-center gap-2"
             >
               <Eye className="w-4 h-4" />
-              View Profile
+              View Pet
             </Button>
           </Link>
+
+          {/* Show View Requests button only if pet is available and has requests */}
+          {pet.status === "Available" && requestCount > 0 && (
+            <Button
+              onClick={handleViewRequests}
+              className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white"
+            >
+              <Users className="w-4 h-4" />
+              View Requests ({requestCount})
+            </Button>
+          )}
         </div>
       </div>
     </div>

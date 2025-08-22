@@ -87,8 +87,13 @@ const NewsfeedPost = ({ post }) => {
   const handleFavorite = async () => {
     try {
       const token = localStorage.getItem("token");
-      const userId = localStorage.getItem("userId");
-      const postId = post._id || post.id;
+      const postId = post.adoptionId || post._id || post.id;
+
+      console.log("Favorite button clicked:", {
+        postId,
+        isFavorite,
+        token: !!token,
+      });
 
       if (!token) {
         alert("Please login to add favorites");
@@ -96,47 +101,48 @@ const NewsfeedPost = ({ post }) => {
       }
 
       if (isFavorite) {
-        // Remove from favorites
-        const response = await fetch(`http://localhost:3000/api/favorites/${postId}`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
+        const response = await fetch(
+          `http://localhost:3000/favorite/delete/${postId}`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           }
-        });
+        );
 
         if (response.ok) {
           setIsFavorite(false);
-          // Update localStorage for backwards compatibility
-          const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-          const updatedFavorites = favorites.filter((id) => id !== postId);
-          localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+          console.log("Successfully removed from favorites");
         } else {
           const errorData = await response.json();
           console.error("Remove favorite error:", errorData);
-          throw new Error(errorData.message || "Failed to remove from favorites");
+          throw new Error(
+            errorData.message || "Failed to remove from favorites"
+          );
         }
       } else {
         // Add to favorites
-        const response = await fetch("http://localhost:3000/api/favorites", {
+        const response = await fetch("http://localhost:3000/favorite/add", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ postId })
+          body: JSON.stringify({ postId }),
         });
 
         if (response.ok) {
           setIsFavorite(true);
-          // Update localStorage for backwards compatibility
-          const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-          const updatedFavorites = [...favorites, postId];
-          localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+          console.log("Successfully added to favorites");
         } else {
           const errorData = await response.json();
           console.error("Add favorite error:", errorData);
-          if (response.status === 400 && errorData.message === "Post already in favorites") {
+          if (
+            response.status === 400 &&
+            errorData.message === "Post already in favorites"
+          ) {
             setIsFavorite(true);
             return;
           }
@@ -156,37 +162,41 @@ const NewsfeedPost = ({ post }) => {
   useEffect(() => {
     const checkFavoriteStatus = async () => {
       try {
-        const userId = localStorage.getItem("userId");
-        const postId = post._id || post.id;
-        
-        if (!userId || !postId) return;
+        const token = localStorage.getItem("token");
+        const postId = post.adoptionId || post._id || post.id;
 
-        const response = await fetch(`http://localhost:3000/api/favorites/check/${postId}?userId=${userId}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json"
+        console.log("Checking favorite status:", { postId, token: !!token });
+
+        if (!token || !postId) {
+          console.log("Missing auth data, skipping favorite check");
+          return;
+        }
+
+        const response = await fetch(
+          `http://localhost:3000/favorite/check/${postId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           }
-        });
+        );
 
         if (response.ok) {
           const data = await response.json();
           setIsFavorite(data.isFavorited);
+          console.log("Favorite status checked:", data.isFavorited);
         } else {
-          // Fallback to localStorage
-          const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-          setIsFavorite(favorites.includes(postId));
+          console.error("Failed to check favorite status");
         }
       } catch (error) {
         console.error("Error checking favorite status:", error);
-        // Fallback to localStorage
-        const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-        const postId = post._id || post.id;
-        setIsFavorite(favorites.includes(postId));
       }
     };
 
     checkFavoriteStatus();
-  }, [post._id, post.id]);
+  }, [post.adoptionId, post._id, post.id]);
 
   // Reset photo index when post changes
   useEffect(() => {

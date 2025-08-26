@@ -296,29 +296,6 @@ const Navbar = ({
               ))}
             </div>
 
-            {/* Search Bar */}
-            <div className="flex items-center w-full md:max-w-md mx-4 flex-1">
-              <div className="relative w-full flex items-center">
-                <input
-                  type="text"
-                  placeholder="Search pets, services..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSearch(e)}
-                  aria-label="Search pets or services"
-                  className="flex-grow w-full pl-4 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:bg-white transition-all"
-                />
-
-                <button
-                  onClick={handleSearch}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 rounded-full text-purple-600 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  aria-label="Search"
-                >
-                  <Search className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
-
             {/* Right Side Icons */}
             <div className="flex items-center space-x-4">
               {isAuthenticated ? (

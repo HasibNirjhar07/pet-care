@@ -395,16 +395,18 @@
 // export default CarePage;
 
 import React, { useEffect, useState } from "react";
+import { MapPin, RefreshCw, Phone, AlertCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function NearbyServices() {
   const [status, setStatus] = useState("idle"); // idle | getting | loading | ready | error
   const [error, setError] = useState("");
   const [services, setServices] = useState([]);
   const [radius, setRadius] = useState(5000); // meters
+  const navigate = useNavigate();
 
   useEffect(() => {
     getNearby();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function getNearby(customCoords) {
@@ -428,7 +430,6 @@ export default function NearbyServices() {
     };
 
     const onError = (err) => {
-      // if blocked/denied, you could fallback to a default city center
       setError(err.message || "Could not get location.");
       setStatus("error");
     };
@@ -445,80 +446,94 @@ export default function NearbyServices() {
   }
 
   return (
-    <div style={{ maxWidth: 720, margin: "2rem auto", padding: "0 1rem" }}>
-      <h2>Nearby Pet Care Services</h2>
+    <div className="max-w-2xl mx-auto mt-8 p-4">
+      <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2 mb-4">
+        <MapPin className="text-purple-600" /> Nearby Pet Care Services
+      </h2>
 
-      <div
-        style={{
-          margin: "1rem 0",
-          display: "flex",
-          gap: 8,
-          alignItems: "center",
-        }}
-      >
-        <label>
-          Search radius (meters):{" "}
+      {/* Controls */}
+      <div className="flex items-center gap-4 mb-6">
+        <label className="flex items-center gap-2 text-sm text-gray-700">
+          Search radius (m):
           <input
             type="number"
             min={500}
             step={500}
             value={radius}
             onChange={(e) => setRadius(Number(e.target.value))}
+            className="border rounded px-2 py-1 w-24 focus:ring focus:ring-purple-300 outline-none"
           />
         </label>
         <button
           onClick={() => getNearby()}
           disabled={status === "getting" || status === "loading"}
+          className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition disabled:opacity-50"
         >
-          Refresh
+          <RefreshCw size={16} /> Refresh
         </button>
       </div>
 
-      {status === "getting" && <p>Requesting your location…</p>}
-      {status === "loading" && <p>Loading nearby services…</p>}
+      {/* Status Messages */}
+      {status === "getting" && (
+        <p className="text-gray-500">Requesting your location…</p>
+      )}
+      {status === "loading" && (
+        <p className="text-gray-500">Loading nearby services…</p>
+      )}
       {status === "error" && (
-        <div style={{ background: "#ffecec", padding: 12, borderRadius: 8 }}>
-          <p>
-            <b>Error:</b> {error}
+        <div className="bg-red-50 text-red-700 border border-red-200 p-4 rounded-lg mb-4">
+          <p className="flex items-center gap-2 font-semibold">
+            <AlertCircle size={16} /> Error: {error}
           </p>
-          <p>
-            You can allow location in the browser settings and click “Refresh”.
-            Or try a fallback:
+          <p className="text-sm mt-1">
+            Allow location access in your browser and click “Refresh”. Or use
+            fallback:{" "}
             <button
-              style={{ marginLeft: 8 }}
-              onClick={
-                () => getNearby({ lat: 23.777176, lng: 90.399452 }) // Dhaka fallback
-              }
+              className="underline text-purple-600 ml-1"
+              onClick={() => getNearby({ lat: 23.777176, lng: 90.399452 })}
             >
-              Use Dhaka Center
+              Dhaka Center
             </button>
           </p>
         </div>
       )}
 
+      {/* Results */}
       {status === "ready" && services.length === 0 && (
-        <p>No services found within this radius.</p>
+        <p className="text-gray-600">No services found within this radius.</p>
       )}
 
-      <ul style={{ listStyle: "none", padding: 0, marginTop: 16 }}>
+      <div className="grid gap-4 mt-4">
         {services.map((s) => (
-          <li
+          <div
             key={s._id}
-            style={{
-              border: "1px solid #eee",
-              borderRadius: 12,
-              padding: 12,
-              marginBottom: 10,
-              boxShadow: "0 2px 6px rgba(0,0,0,0.06)",
-            }}
+            onClick={() => navigate(`services/${s._id}`)}
+            className="bg-white shadow-md rounded-xl p-4 border hover:shadow-lg transition cursor-pointer"
           >
-            <div style={{ fontSize: 18, fontWeight: 600 }}>{s.name}</div>
-            <div style={{ color: "#666" }}>{s.category}</div>
-            {s.location?.address && <div>{s.location.address}</div>}
-            {s.phone && <div>📞 {s.phone}</div>}
-          </li>
+            {/* Name + Distance */}
+            <div className="flex justify-between items-start">
+              <h3 className="text-lg font-semibold text-gray-800">
+                {s.name}
+                {console.log(s)}
+              </h3>
+              {s.distance && (
+                <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
+                  {(s.distance / 1000).toFixed(1)} km away
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-gray-600 capitalize">{s.category}</p>
+            {s.location?.address && (
+              <p className="text-sm text-gray-500 mt-1">{s.location.address}</p>
+            )}
+            {s.phone && (
+              <p className="text-sm text-gray-700 mt-2 flex items-center gap-2">
+                <Phone size={14} className="text-purple-600" /> {s.phone}
+              </p>
+            )}
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }

@@ -5,9 +5,9 @@ const careController = require("../controllers/careController");
 
 // Public routes
 router.get("/services", careController.getServices);
-//router.get("/services/:id", careController.getServiceById);
 router.get("/services/slots/available", careController.getAvailableSlots);
 router.get("/services/nearby", careController.getNearbyServices);
+router.get("/services/:id", careController.getServiceById);
 
 // Protected routes
 router.use(jwtVerification);

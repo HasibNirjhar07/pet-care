@@ -202,88 +202,85 @@ async function run() {
   await Service.deleteMany({});
   await Service.insertMany([
     {
-      name: "Happy Paws Walking",
-      category: "walking",
-      phone: "01234-567890",
-      location: {
-        type: "Point",
-        coordinates: [90.399452, 23.777176], // Dhaka (lng, lat)
-        address: "Dhaka",
-      },
-    },
-    {
-      name: "Cozy Pet Boarding",
+      name: "Board Bazar Pet Haven",
       category: "boarding",
-      phone: "01700-111222",
+      phone: "01711-445566",
       location: {
         type: "Point",
-        coordinates: [90.412518, 23.810331],
-        address: "Gulshan",
+        coordinates: [90.3882, 23.9223], // lng, lat
+        address: "Board Bazar, Gazipur",
       },
+      servicesOffered: ["Pet Boarding", "Daycare", "Overnight Stay"],
     },
     {
-      name: "Quick Groomers",
+      name: "Happy Tails Grooming",
       category: "grooming",
-      phone: "01888-333444",
+      phone: "01622-998877",
       location: {
         type: "Point",
-        coordinates: [90.3667, 23.7333],
-        address: "Dhanmondi",
+        coordinates: [90.3895, 23.9215],
+        address: "Board Bazar, Gazipur",
       },
+      servicesOffered: [
+        "Bath & Brush",
+        "Haircut",
+        "Nail Trimming",
+        "Ear Cleaning",
+      ],
     },
     {
-      name: "Paw Paradise Gazipur",
-      category: "boarding",
-      phone: "01711-223344",
+      name: "Paws & Walks",
+      category: "walking",
+      phone: "01555-334455",
       location: {
         type: "Point",
-        coordinates: [90.3921, 23.9887],
-        address: "Chowrasta, Gazipur",
+        coordinates: [90.3877, 23.923],
+        address: "Board Bazar, Gazipur",
       },
+      servicesOffered: ["Daily Walks", "Exercise Runs", "Pet Taxi"],
     },
     {
-      name: "Happy Tails Veterinary Clinic",
+      name: "CareVet Board Bazar",
       category: "vet",
-      phone: "01999-556677",
+      phone: "01888-667788",
       location: {
         type: "Point",
-        coordinates: [90.3898, 23.9912],
-        address: "Gazipur Sadar",
+        coordinates: [90.3891, 23.922],
+        address: "Board Bazar, Gazipur",
       },
+      servicesOffered: [
+        "General Checkup",
+        "Vaccination",
+        "Surgery",
+        "Emergency Care",
+      ],
     },
     {
-      name: "Cozy Kennels Gazipur",
+      name: "Furry Friends Sitting",
+      category: "sitting",
+      phone: "01999-112233",
+      location: {
+        type: "Point",
+        coordinates: [90.39, 23.9217],
+        address: "Board Bazar, Gazipur",
+      },
+      servicesOffered: ["Home Sitting", "Overnight Stay", "Pet Feeding"],
+    },
+    {
+      name: "Board Bazar Pet World",
       category: "boarding",
-      phone: "01888-112233",
+      phone: "01777-445522",
       location: {
         type: "Point",
-        coordinates: [90.3945, 23.9869],
-        address: "Bhubanpur, Gazipur",
+        coordinates: [90.3879, 23.9228],
+        address: "Board Bazar, Gazipur",
       },
-    },
-    {
-      name: "Purrfect Groomers",
-      category: "grooming",
-      phone: "01666-778899",
-      location: {
-        type: "Point",
-        coordinates: [90.3902, 23.9925],
-        address: "Konabari, Gazipur",
-      },
-    },
-    {
-      name: "Walkies & Woofs",
-      category: "walking",
-      phone: "01555-889900",
-      location: {
-        type: "Point",
-        coordinates: [90.3874, 23.9901],
-        address: "Joydebpur, Gazipur",
-      },
+      servicesOffered: ["Pet Boarding", "Training", "Pet Taxi"],
     },
   ]);
 
-  console.log("Seeded!");
   await mongoose.disconnect();
+
+  console.log("Seeded!");
 }
 run().catch(console.error);

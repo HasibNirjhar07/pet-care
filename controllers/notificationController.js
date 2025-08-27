@@ -26,6 +26,7 @@ exports.markAsRead = async (req, res) => {
 // Create notification (helper function)
 exports.createNotification = async (userId, message, petId, type = 'general') => {
   try {
+    console.log('Creating notification:', { userId, message, type }); // Debug log
     const notification = new Notification({
       userId,
       message,
@@ -33,6 +34,7 @@ exports.createNotification = async (userId, message, petId, type = 'general') =>
       petId
     });
     await notification.save();
+    console.log('Notification saved successfully'); // Debug log
   } catch (error) {
     console.error('Error creating notification:', error);
   }

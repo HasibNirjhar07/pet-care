@@ -11,7 +11,7 @@ const {
     viewAdoptionRequests, 
     getCommentsForAdoption, 
     getCommentCount, 
-    getLikeStatus,          
+    getLikeStatus,        
     scheduleMeeting,
     updateAdoptionStatus, 
     getMyAdoptionPosts, 

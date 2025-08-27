@@ -13,7 +13,7 @@ const notificationSchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
-    enum: ['adoption_request', 'adoption_accepted', 'adoption_rejected', 'meeting_scheduled', 'general'],
+    enum: ['adoption_request', 'adoption_accepted', 'adoption_rejected', 'meeting_scheduled', 'post_liked', 'general'],
     default: 'general'
   },
   petId: { 

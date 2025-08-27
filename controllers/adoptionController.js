@@ -4,277 +4,6 @@ const User = require("../models/User");
 const AdoptionRequest = require("../models/AdoptionRequest");
 const { createNotification } = require("./notificationController");
 
-// NEW: Handle found pets - create pet profile then adoption post
-const postFoundPetForAdoption = async (req, res) => {
-    const { 
-        adoptionDescription, 
-        petName,
-        petSpecies,
-        petBreed,
-        petAge,
-        petColor,
-        foundLocation
-    } = req.body;
-    
-    try {
-        // Validate required fields for found pet
-        if (!petSpecies || !adoptionDescription) {
-            return res.status(400).json({ 
-                message: "Pet species and adoption description are required for found pets" 
-            });
-        }
-
-        // Calculate approximate date of birth from age
-        const currentDate = new Date();
-        let dateOfBirth;
-        
-        if (petAge && !isNaN(parseInt(petAge))) {
-            const ageInYears = parseInt(petAge);
-            dateOfBirth = new Date(currentDate.getFullYear() - ageInYears, 0, 1);
-        } else {
-            // Default to 1 year old if age not provided or invalid
-            dateOfBirth = new Date(currentDate.getFullYear() - 1, 0, 1);
-        }
-        
-        // Create new pet profile for found pet
-        const pet = new Pet({
-            name: petName || "Found Pet",
-            ownerId: req.user._id,
-            species: petSpecies,
-            dateOfBirth: dateOfBirth,
-            breed: petBreed || "Unknown",
-            color: petColor || "Unknown",
-            description: foundLocation ? `Found at: ${foundLocation}` : "Found pet",
-            status: "Available", // Set as available immediately since it's for adoption
-            traits: ["Found pet", "Needs home"],
-            healthRecords: ["Medical history unknown - found pet"],
-            photos: [], // Will be populated after file processing
-            profilePhoto: null // Will be populated after file processing
-        });
-        
-        await pet.save();
-        const petId = pet._id.toString();
-
-        // Handle photo uploads if provided
-        let profilePhotoUrl = null;
-        const photoUrls = [];
-
-        if (req.files) {
-            const fs = require('fs');
-            const path = require('path');
-
-            // Handle profile photo
-            if (req.files.profilePhoto && req.files.profilePhoto.length > 0) {
-                const profileFile = req.files.profilePhoto[0];
-                const now = new Date();
-                const creationDate = `${String(now.getDate()).padStart(2, '0')}${String(now.getMonth() + 1).padStart(2, '0')}${now.getFullYear()}`;
-                const serial = String(Date.now()).slice(-5);
-                const newFileName = `${petId}_profile_${creationDate}_${serial}${path.extname(profileFile.originalname)}`;
-                const oldPath = profileFile.path;
-                const newPath = path.join(__dirname, '../uploads/photos', petId, newFileName);
-
-                // Create pet-specific directory if it doesn't exist
-                const petPhotoDir = path.dirname(newPath);
-                if (!fs.existsSync(petPhotoDir)) {
-                    await fs.promises.mkdir(petPhotoDir, { recursive: true });
-                }
-
-                await fs.promises.rename(oldPath, newPath);
-                profilePhotoUrl = `/uploads/photos/${petId}/${newFileName}`;
-            }
-
-            // Handle additional photos
-            if (req.files.photos && req.files.photos.length > 0) {
-                const petPhotoDir = path.join(__dirname, '../uploads/photos', petId);
-
-                // Create pet-specific directory if it doesn't exist
-                if (!fs.existsSync(petPhotoDir)) {
-                    await fs.promises.mkdir(petPhotoDir, { recursive: true });
-                }
-
-                for (const file of req.files.photos) {
-                    const now = new Date();
-                    const creationDate = `${String(now.getDate()).padStart(2, '0')}${String(now.getMonth() + 1).padStart(2, '0')}${now.getFullYear()}`;
-                    const serial = String(Date.now()).slice(-5);
-                    const newFileName = `${petId}_${creationDate}_${serial}${path.extname(file.originalname)}`;
-                    const oldPath = file.path;
-                    const newPath = path.join(petPhotoDir, newFileName);
-
-                    await fs.promises.rename(oldPath, newPath);
-                    photoUrls.push(`/uploads/photos/${petId}/${newFileName}`);
-                }
-            }
-
-            // Update pet with photo URLs
-            pet.profilePhoto = profilePhotoUrl;
-            pet.photos = photoUrls;
-            await pet.save();
-        }
-        
-        // Add the pet to the user's profile
-        const user = await User.findById(req.user._id);
-        if (user.petsOwned) {
-            user.petsOwned.push(pet._id);
-        } else {
-            user.petsOwned = [pet._id];
-        }
-        await user.save();
-
-        // Create adoption post immediately - always permanent for found pets
-        const adoption = new PetAdoption({
-            PetID: pet._id,
-            AdoptionDescription: adoptionDescription,
-            adoptionType: 'permanent', // Always permanent for found pets
-            ReturnDate: null // No return date for permanent adoption
-        });
-
-        await adoption.save();
-
-        res.status(201).json({ 
-            message: "Found pet profile created and posted for adoption successfully", 
-            adoption: {
-                id: adoption._id,
-                petId: pet._id,
-                adoptionDescription: adoption.AdoptionDescription,
-                adoptionType: adoption.adoptionType,
-                returnDate: adoption.ReturnDate
-            },
-            pet: {
-                id: pet._id,
-                name: pet.name,
-                species: pet.species,
-                breed: pet.breed,
-                color: pet.color,
-                foundLocation: foundLocation,
-                profilePhoto: profilePhotoUrl,
-                photos: photoUrls
-            }
-        });
-    } catch (error) {
-        console.error("Error posting found pet for adoption:", error);
-        
-        // Clean up any uploaded files on error
-        if (req.files) {
-            const fs = require('fs');
-            const allFiles = [];
-            if (req.files.profilePhoto) allFiles.push(...req.files.profilePhoto);
-            if (req.files.photos) allFiles.push(...req.files.photos);
-            
-            for (const file of allFiles) {
-                try {
-                    await fs.promises.unlink(file.path);
-                } catch (unlinkError) {
-                    console.error("Error cleaning up file:", unlinkError);
-                }
-            }
-        }
-        
-        res.status(500).json({ message: "Error posting found pet for adoption", error: error.message });
-    }
-};
-
-// NEW: Add photos to existing pet for adoption post
-const addPhotosToAdoptionPet = async (req, res) => {
-    const { petId } = req.params;
-    
-    try {
-        // Check if pet exists and user owns it
-        const pet = await Pet.findById(petId);
-        if (!pet) {
-            return res.status(404).json({ message: "Pet not found" });
-        }
-        
-        if (pet.ownerId.toString() !== req.user._id.toString()) {
-            return res.status(403).json({ message: "You can only add photos to your own pets" });
-        }
-
-        let profilePhotoUrl = pet.profilePhoto;
-        const existingPhotos = [...(pet.photos || [])];
-
-        if (req.files) {
-            const fs = require('fs');
-            const path = require('path');
-
-            // Handle profile photo
-            if (req.files.profilePhoto && req.files.profilePhoto.length > 0) {
-                const profileFile = req.files.profilePhoto[0];
-                const now = new Date();
-                const creationDate = `${String(now.getDate()).padStart(2, '0')}${String(now.getMonth() + 1).padStart(2, '0')}${now.getFullYear()}`;
-                const serial = String(Date.now()).slice(-5);
-                const newFileName = `${petId}_profile_${creationDate}_${serial}${path.extname(profileFile.originalname)}`;
-                const oldPath = profileFile.path;
-                const newPath = path.join(__dirname, '../uploads/photos', petId, newFileName);
-
-                // Create pet-specific directory if it doesn't exist
-                const petPhotoDir = path.dirname(newPath);
-                if (!fs.existsSync(petPhotoDir)) {
-                    await fs.promises.mkdir(petPhotoDir, { recursive: true });
-                }
-
-                await fs.promises.rename(oldPath, newPath);
-                profilePhotoUrl = `/uploads/photos/${petId}/${newFileName}`;
-            }
-
-            // Handle additional photos
-            if (req.files.photos && req.files.photos.length > 0) {
-                const petPhotoDir = path.join(__dirname, '../uploads/photos', petId);
-
-                // Create pet-specific directory if it doesn't exist
-                if (!fs.existsSync(petPhotoDir)) {
-                    await fs.promises.mkdir(petPhotoDir, { recursive: true });
-                }
-
-                for (const file of req.files.photos) {
-                    const now = new Date();
-                    const creationDate = `${String(now.getDate()).padStart(2, '0')}${String(now.getMonth() + 1).padStart(2, '0')}${now.getFullYear()}`;
-                    const serial = String(Date.now()).slice(-5);
-                    const newFileName = `${petId}_${creationDate}_${serial}${path.extname(file.originalname)}`;
-                    const oldPath = file.path;
-                    const newPath = path.join(petPhotoDir, newFileName);
-
-                    await fs.promises.rename(oldPath, newPath);
-                    existingPhotos.push(`/uploads/photos/${petId}/${newFileName}`);
-                }
-            }
-
-            // Update pet with photo URLs
-            pet.profilePhoto = profilePhotoUrl;
-            pet.photos = existingPhotos;
-            await pet.save();
-        }
-
-        res.status(200).json({ 
-            message: "Photos added successfully",
-            pet: {
-                id: pet._id,
-                name: pet.name,
-                profilePhoto: profilePhotoUrl,
-                photos: existingPhotos
-            }
-        });
-    } catch (error) {
-        console.error("Error adding photos to pet:", error);
-        
-        // Clean up any uploaded files on error
-        if (req.files) {
-            const fs = require('fs');
-            const allFiles = [];
-            if (req.files.profilePhoto) allFiles.push(...req.files.profilePhoto);
-            if (req.files.photos) allFiles.push(...req.files.photos);
-            
-            for (const file of allFiles) {
-                try {
-                    await fs.promises.unlink(file.path);
-                } catch (unlinkError) {
-                    console.error("Error cleaning up file:", unlinkError);
-                }
-            }
-        }
-        
-        res.status(500).json({ message: "Error adding photos to pet", error: error.message });
-    }
-};
-
 const postAdoptionRequest = async (req, res) => {
     const { petId, adoptionDescription, adoptionType, returnDate } = req.body;
     const user = await User.findById(req.user._id);
@@ -284,7 +13,7 @@ const postAdoptionRequest = async (req, res) => {
         if (!pet || pet.ownerId.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: "You can only post adoption requests for your own pets" });
         }
-        if (await PetAdoption.exists({ PetID: petId })) {
+        if (await AdoptionRequest.exists({ PetID: petId })) {
             return res.status(403).json({ message: "Pet is already posted for adoption" });
         }
 
@@ -310,7 +39,7 @@ const postAdoptionRequest = async (req, res) => {
 const getAvailablePets = async (req, res) => {
     try {
         const pets = await Pet.find({ status: "Available" })
-            .populate("ownerId", "name email phone location profilePhoto") // Fetch owner details
+            .populate("ownerId", "name email phone") // Fetch owner details
             .lean();
 
         // Fetch adoption details for each pet
@@ -333,7 +62,6 @@ const getAvailablePets = async (req, res) => {
                 color: pet.color,
                 description: pet.description,
                 status: pet.status,
-                profilePhoto: pet.profilePhoto,
                 photos: pet.photos,
                 healthRecords: pet.healthRecords,
                 traits: pet.traits,
@@ -349,10 +77,8 @@ const getAvailablePets = async (req, res) => {
                     id: pet.ownerId._id,
                     name: pet.ownerId.name,
                     email: pet.ownerId.email,
-                    phone: pet.ownerId.phone,
-                    location: pet.ownerId.location,
-                    profilePhoto: pet.ownerId.profilePhoto
-                } : { id: null, name: "Unknown", email: "Unknown", phone: "Unknown", location: "Unknown", profilePhoto: "https://via.placeholder.com/150" } // Ensure postedBy is always an object
+                    phone: pet.ownerId.phone
+                } : { id: null, name: "Unknown", email: "Unknown", phone: "Unknown" } // Ensure postedBy is always an object
             };
         });
 
@@ -649,9 +375,17 @@ const scheduleMeeting = async (req, res) => {
             minute: '2-digit'
         });
 
+        // Get pet owner details for contact information
+        const petOwner = await User.findById(pet.ownerId).select('phone');
+        const contactInfo = petOwner && petOwner.phone ? 
+            ` Please contact ${petOwner.phone} for further details.` : 
+            ' Please check your adoption posts for contact details.';
+
+        console.log('Creating meeting notification with contact info:', contactInfo); 
+
         await createNotification(
             adoptionRequest.requesterId,
-            `Great news! A meeting has been scheduled for your adoption request for ${pet.name} on ${meetingDateFormatted}.`,
+            `Great news! A meeting has been scheduled for your adoption request for ${pet.name} on ${meetingDateFormatted}.${contactInfo}`,
             pet._id,
             'meeting_scheduled'
         );
@@ -787,8 +521,6 @@ const updateAdoptionPost = async (req, res) => {
 
 module.exports = { 
     postAdoptionRequest, 
-    postFoundPetForAdoption, // NEW: Handle found pets
-    addPhotosToAdoptionPet, // NEW: Add photos to existing pets
     getAvailablePets, 
     commentOnAdoption, 
     requestAdoption, 

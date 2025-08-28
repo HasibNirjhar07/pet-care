@@ -120,10 +120,11 @@ const AppContent = ({ user, setUser, handleLogout }) => {
   return (
     <>
       <Navbar {...getNavbarProps()} />
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/signin" element={<SignInPage onSignIn={setUser} />} />
-        <Route path="/signup" element={<SignUpPage onSignUp={setUser} />} />
+      <div className="pt-20">
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/signin" element={<SignInPage onSignIn={setUser} />} />
+          <Route path="/signup" element={<SignUpPage onSignUp={setUser} />} />
         <Route
           path="/dashboard"
           element={
@@ -254,6 +255,7 @@ const AppContent = ({ user, setUser, handleLogout }) => {
         <Route path="/admin/reports" element={<AdminDashboard />} />
         <Route path="/admin/settings" element={<AdminDashboard />} />
       </Routes>
+      </div>
     </>
   );
 };

@@ -29,7 +29,7 @@ const QuickActions = () => {
 
           try {
             const res = await fetch(
-              `http://localhost:3000/api/care/services/nearby?lat=${lat}&lng=${lng}&radius=5000`
+              `http://localhost:3000/api/care/services/nearby?lat=${lat}&lng=${lng}&radius=10000`
             );
             const data = await res.json();
 
@@ -107,54 +107,8 @@ const QuickActions = () => {
         </CardContent>
       </Card>
 
-      {/* Upcoming Events */}
-      <Card className="shadow-md bg-white/80 backdrop-blur-sm">
-        <div className="flex items-center border-b border-gray-200 px-4 py-2">
-          <Calendar size={20} className="text-purple-600 mr-2" />
-          <h2 className="text-base font-semibold">Upcoming Events</h2>
-        </div>
-        <CardContent className="space-y-3">
-          {upcomingEvents.map((event, index) => (
-            <div
-              key={index}
-              className="rounded-lg p-3"
-              style={{
-                background: "linear-gradient(to right, #eff6ff, #f3e8ff)",
-              }}
-            >
-              <p className="font-medium text-sm mb-0.5">{event.title}</p>
-              <p className="text-xs text-gray-600">
-                {event.date} • {event.location}
-              </p>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+     
 
-      {/* Quick Stats */}
-      <Card
-        className="shadow-md"
-        style={{
-          background: "linear-gradient(to bottom right, #ede9fe, #fce7f3)",
-        }}
-      >
-        <CardContent className="flex flex-col items-center gap-3 text-center">
-          <Heart size={32} className="text-purple-600" />
-          <div>
-            <h3 className="text-2xl font-bold text-gray-900">2,847</h3>
-            <p className="text-sm text-gray-600">Pets Found Homes</p>
-          </div>
-          <Button
-            className="w-full text-white"
-            style={{
-              background: "linear-gradient(to right, #9333ea, #ec4899)",
-            }}
-          >
-            <Users size={16} className="mr-2" />
-            Join Community
-          </Button>
-        </CardContent>
-      </Card>
     </div>
   );
 };

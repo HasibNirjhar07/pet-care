@@ -205,7 +205,7 @@ const getLikeStatus = async (req, res) => {
     }
 };
 
-// UPDATED: Modified likeAdoptionPost to send notifications
+// UPDATED: Modified likeAdoptionPost to return proper response format
 const likeAdoptionPost = async (req, res) => {
     try {
         const { adoptionId } = req.params;
@@ -222,15 +222,6 @@ const likeAdoptionPost = async (req, res) => {
         if (index === -1) {
             adoption.likes.push(userId);
             liked = true;
-            
-            // Send notification to pet owner
-            const pet = await Pet.findById(adoption.PetID);
-            if (pet && pet.ownerId.toString() !== userId.toString()) {
-                const user = await User.findById(userId).select('name');
-                const message = `${user.name} liked your adoption post for ${pet.name}! (${adoption.likes.length} likes)`;
-                
-                await createNotification(pet.ownerId, message, pet._id, 'post_liked');
-            }
         } else {
             adoption.likes.splice(index, 1);
             liked = false;
@@ -238,6 +229,7 @@ const likeAdoptionPost = async (req, res) => {
 
         await adoption.save();
 
+        // Return the expected format for frontend
         res.json({ 
             liked: liked,
             totalLikes: adoption.likes.length 
@@ -535,12 +527,12 @@ module.exports = {
     viewAdoptionRequests, 
     scheduleMeeting, 
     getCommentsForAdoption, 
-    getCommentCount,        
-    getLikeStatus,          
+    getCommentCount,        // NEW
+    getLikeStatus,          // NEW
     updateAdoptionStatus, 
     getMyAdoptionPosts, 
     deleteAdoptionPost, 
     updateAdoptionPost, 
-    likeAdoptionPost,       
+    likeAdoptionPost,       // UPDATED
     deleteAdoptionRequest
 };

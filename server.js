@@ -16,7 +16,7 @@ const shopRoutes = require("./routes/shopRoutes");
 const careRoutes = require("./routes/careRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const favoriteRoutes = require("./routes/favoriteRoutes");
-const bookingRoutes = require("./routes/bookingRoutes");
+
 // Database connection
 mongoose
   .connect(mongoURL)
@@ -48,8 +48,6 @@ app.use("/shop", shopRoutes);
 app.use("/api/care", careRoutes);
 app.use("/notifications", notificationRoutes);
 app.use("/favorite", favoriteRoutes);
-
-app.use("/api/bookings", bookingRoutes);
 
 // Server
 app.listen(PORT, () => {

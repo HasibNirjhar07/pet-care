@@ -30,11 +30,6 @@ import Requests from "./pages/Adopt/requests.jsx";
 import NewAdoptionPostPage from "./pages/Adopt/NewAdoptionPostPage.jsx"; // Import NewAdoptionPostPage
 import { shopApi } from "./lib/api";
 import PurchaseHistory from "./pages/PurchaseHistory";
-import ServiceDetails from "./pages/ServiceDetails";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import BookingsHistory from "./pages/BookingsHistory";
-
 // Placeholder components (replace with actual components when available)
 // const AdoptPage = () => <div>Adopt Page (Placeholder)</div>;
 const VetPortal = () => <div>Vet Portal Page (Placeholder)</div>;
@@ -184,7 +179,6 @@ const AppContent = ({ user, setUser, handleLogout }) => {
             <CarePage />
           }
         />
-        <Route path="/care/services/:id" element={<ServiceDetails />} />
         <Route
           path="/shop"
           element={
@@ -249,7 +243,6 @@ const AppContent = ({ user, setUser, handleLogout }) => {
             </ProtectedRoute>
           }
         />
-        <Route path="/bookings" element={<BookingsHistory />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<AdminDashboard />} />
         <Route path="/admin/reports" element={<AdminDashboard />} />
@@ -318,7 +311,6 @@ const App = () => {
   return (
     <Router>
       <AppContent user={user} setUser={setUser} handleLogout={handleLogout} />
-      <ToastContainer position="top-right" autoClose={3000} />
     </Router>
   );
 };

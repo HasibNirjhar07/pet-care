@@ -30,25 +30,26 @@ exports.getNearbyServices = async (req, res) => {
 
   try {
     const { lat, lng, radius } = req.query;
+    console.log("Fetching nearby services with params:", { lat, lng, radius });
 
-    const services = await Service.aggregate([
-      {
-        $geoNear: {
-          near: {
-            type: "Point",
-            coordinates: [parseFloat(lng), parseFloat(lat)],
-          },
-          distanceField: "distance",
-          maxDistance: parseInt(radius), // in meters
-          spherical: true,
+    if (!lat || !lng)
+      return res.status(400).json({ error: "lat and lng are required" });
+
+    const maxDistance = Number(radius) || 5000;
+
+    const services = await Service.find({
+      location: {
+        $near: {
+          $geometry: { type: "Point", coordinates: [Number(lng), Number(lat)] },
+          $maxDistance: maxDistance,
         },
       },
-    ]);
+    }).limit(50);
 
-    res.json({ services });
+    res.json({ count: services.length, services });
   } catch (err) {
-    console.error("Geo query error:", err);
-    res.status(500).json({ error: "Failed to fetch nearby services" });
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
   }
 };
 
@@ -114,25 +115,19 @@ exports.getServices = async (req, res) => {
 // Get service by ID
 exports.getServiceById = async (req, res) => {
   try {
-    const service = await Service.findById(req.params.id);
-    console.log(req.params.id);
-    if (!service) return res.status(404).json({ error: "Service not found" });
-    res.json({ service });
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch service" });
-  }
-};
+    const service = await Service.findById(req.params.id).populate(
+      "provider",
+      "name email profilePicture role experience specialties"
+    );
 
-// create booking
-exports.createBooking = async (req, res) => {
-  try {
-    const { serviceId, date, time, pet, notes } = req.body;
-    // Save booking into a Booking model
-    const booking = new Booking({ serviceId, date, time, pet, notes });
-    await booking.save();
-    res.json({ message: "Booking confirmed!", booking });
-  } catch (err) {
-    res.status(500).json({ error: "Failed to create booking" });
+    if (!service) {
+      return res.status(404).json({ error: "Service not found" });
+    }
+
+    res.json(service);
+  } catch (error) {
+    console.error("Get service error:", error);
+    res.status(500).json({ error: "Failed to fetch service" });
   }
 };
 

@@ -85,7 +85,7 @@ const ServiceSchema = new mongoose.Schema({
   name: { type: String, required: true },
   category: {
     type: String,
-    enum: ["walking", "boarding", "grooming", "vet", "sitting"],
+    enum: ["walking", "boarding", "grooming", "vet"],
     required: true,
   },
   phone: String,
@@ -103,11 +103,6 @@ const ServiceSchema = new mongoose.Schema({
     },
     address: String,
   },
-  servicesOffered: [
-    {
-      type: String, // example: "Dog Walking", "Pet Sitting"
-    },
-  ],
 });
 
 // Geospatial index
